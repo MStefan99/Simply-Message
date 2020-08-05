@@ -1,0 +1,215 @@
+ease-in = cubic-bezier(0, .6, .4, 1)
+color-white = #fff
+color-black = #000
+color-light = #f8f9fa
+color-dark = #343a40
+color-primary = #007bff
+color-secondary = #6c757d
+color-success = #28a745
+color-danger = #dc3545
+color-warning = #ffc107
+color-info = #17a2b8
+color-light-primary = #cce5ff
+color-light-secondary = #e2e3e5
+color-light-success = #d4edda
+color-light-danger = #f8d7da
+color-light-warning = #fff3cd
+color-light-info = #d1ecf1
+color-light-light = #fff
+color-light-dark = #d6d8d9
+colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
+'light' 'dark'
+all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
+'light' 'dark' 'white' 'black'
+
+
+html
+	font-family sans-serif
+
+	*
+		box-sizing border-box
+
+	a
+		text-decoration none
+
+	body
+		margin 0
+		display flex
+		flex-flow column nowrap
+		justify-content space-between
+		min-height 100%
+
+		// Utility styles
+
+		// Backgrounds
+
+		for clr in all-colors
+			.bg-{clr}
+				background color- + clr
+				if clr == 'warning' or clr == 'light'
+					color color-dark
+				else
+					color color-light
+
+		// Foregrounds
+
+		for clr in all-colors
+			.text-{clr}
+				color color- + clr
+
+		// Alerts
+
+		.alert
+			margin 1em 0
+			padding 1em 1.5em
+			border-radius 5px
+			font-size 1em
+			font-weight normal
+
+			for clr in colors
+				&.alert-{clr}
+					background color-light- + clr
+					color darken(color-light- + clr, 50%)
+					border 1.2px solid darken(color-light- + clr, 20%)
+
+		.hidden
+			display none !important
+
+		.jumbotron
+			padding 2em
+			background-color darken(color-light, 10%)
+			border-radius 20px
+
+		// Text
+
+		.bold
+			font-weight bold
+
+		.light
+			font-weight normal
+
+		// Controls
+
+		button, .btn
+			display inline-block
+			color color-dark
+			margin .6em
+			margin-left 0
+			padding .7em
+			font-weight bold
+			font-size inherit
+			border-radius 5px
+			border-width 1px
+			border-style solid
+			cursor pointer
+			transition color .2s ease-in,
+			border-color .2s ease-in,
+			background-color .2s ease-in,
+			box-shadow .2s ease-in
+
+			&:focus
+				outline 1px
+
+			for clr in colors
+				&.btn-{clr}
+					background color- + clr
+					border-color color- + clr
+					if clr == 'warning' or clr == 'light'
+						color color-dark
+					else
+						color color-light
+
+					&:hover
+						background darken(color- + clr, 10%)
+
+					&:active
+						background darken(color- + clr, 15%)
+
+					&:focus
+						box-shadow 0 0 0 3px transparentify(color- + clr, color- + clr, 40%)
+
+					&[disabled]
+						pointer-events none
+						background lighten(color- + clr, 40%)
+						border-color lighten(color- + clr, 40%)
+
+			for clr in colors
+				&.btn-outline-{clr}
+					font-weight normal
+					color color- + clr
+					border-color color- + clr
+
+					&:hover
+						color color-light
+						background color- + clr
+
+					&:active
+						background darken(color- + clr, 15%)
+
+					&:focus
+						box-shadow 0 0 0 3px transparentify(color- + clr, color- + clr, 40%)
+
+					&[disabled]
+						pointer-events none
+						color lighten(color- + clr, 40%)
+						border-color lighten(color- + clr, 40%)
+
+			&:focus
+				box-shadow 0 0
+
+		// Forms
+
+		form
+			display block
+
+			label
+				display inline-block
+				margin 1em 1em .4em 0
+
+			input, input[type=email], input[type=password],
+			input[type=search], input[type=text], input[type=email], textarea
+				display block
+				width 100%
+				margin 0
+				padding .75em
+				border-radius 5px
+				border 1px solid color-light-dark
+				transition box-shadow .2s ease-in
+
+				&:focus
+					outline none
+					box-shadow 0 0 0 3px transparentify(color-primary, color-primary, 40%)
+
+			input[type=button], input[type=reset], input[type=submit]
+				width max-content
+				font-weight normal
+				margin-left 0
+
+		// End of utility styles
+
+		header
+			font-size 1.4em
+			padding .8em
+			background #f5f5f5
+
+			.right
+				float right
+
+			a
+				color #707070
+				padding 0 1em
+				display inline
+
+		main
+			margin 1em auto
+			flex-grow 1
+			width 95%
+
+			@media screen and (min-width 425px)
+				width 85%
+
+			@media screen and (min-width 768px)
+				width 75%
+
+			@media screen and (min-width 1024px)
+				width 55%
