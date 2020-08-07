@@ -1,9 +1,12 @@
+'use strict';
+
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 
-const indexRouter = require('./routes/index');
-const authRouter = require('./routes/auth');
+const indexRouter = require('./src/routes/index');
+const authRouter = require('./src/routes/auth');
+const messengerRouter = require('./src/routes/messenger');
 
 const app = express();
 
@@ -17,10 +20,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/', authRouter);
+app.use('/messages', messengerRouter);
 
 
 app.use(function (err, req, res, next) {
-	console.log('error handler');
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
 

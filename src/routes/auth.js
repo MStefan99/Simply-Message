@@ -1,6 +1,10 @@
+'use strict';
+
 const express = require('express');
 const crypto = require('crypto');
 const MongoClient = require('mongodb').MongoClient;
+
+const sign = require('../lib/sign');
 
 const url = 'mongodb://localhost:27017';
 const secret = 'Simply Message very secret key!';
@@ -67,39 +71,17 @@ router.post('/login', async (req, res) => {
 		.digest('hex')) {
 		res.send('Wrong password');
 	} else {
-		const session = JSON.stringify({
+		const session = {
 			user: user._id,
 			time: Date.now(),
 			ip: req.ip,
 			ua: req.get('User-Agent'),
-		});
-		const sessionSignature = crypto
-			.createHmac('sha256', sessionSecret)
-			.update(session)
-			.digest('hex');
+		};
 
-		res.cookie('Session', Buffer
-			.from(session)
-			.toString('base64'));
-		res.cookie('SessionSig', sessionSignature);
-		res.send('ok')
+		res.cookie('Session', sign.sign(session));
+		res.redirect(303, '/messages/');
 	}
 });
-
-
-router.get('/user', (req, res) => {
-	const session = Buffer
-		.from(req.cookies.Session, 'base64')
-		.toString();
-
-	const valid = crypto
-		.createHmac('sha256', sessionSecret)
-		.update(session)
-		.digest('hex') === req.cookies.SessionSig;
-
-	res.send(`Session: ${session}. Valid: ${valid}.`)
-});
-
 
 
 module.exports = router;

@@ -1,10 +1,17 @@
+'use strict';
+
 const express = require('express');
 
 const router = express.Router();
 
 
-router.get('/', async (req, res, next) => {
+router.get('/', (req, res, next) => {
 	res.render('home/index');
+});
+
+
+router.get('/about', (req, res, next) => {
+	res.render('home/about');
 });
 
 
