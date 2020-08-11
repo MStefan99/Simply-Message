@@ -1,11 +1,12 @@
 extends ../layout
 
 block content
-	h1.light Sign in
+	div.container-lg.mt-3
+		h1.light Sign in
 
-	form(action='/login/' method='post')
-		label Username
-		input(name='username' placeholder='Username')
-		label Password
-		input(name='password' type='password' placeholder='Repeat password')
-		input.btn.btn-success(type='submit' value='Sign in')
+		form(action='/login/' method='post')
+			label Username
+			input(name='username' placeholder='Username')
+			label Password
+			input(name='password' type='password' placeholder='Repeat password')
+			input.btn.btn-success(type='submit' value='Sign in')

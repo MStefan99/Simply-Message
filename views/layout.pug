@@ -4,13 +4,16 @@ html(lang='en')
 	head
 		title Simply Message
 		link(rel='stylesheet', href='/style/style.css')
-		meta(name='description' content='Simply message is a')
+		meta(name='description' content='Simply Message is a secure open-source messenger')
 		meta(name='viewport' content='width=device-width, initial-scale=1')
 
 	body
-		header
+		header.shadow-sm
 			a(href='/') Home
-			a.right(href='/login/') Sign in
+			if (!session)
+				a.right(href='/login/') Sign in
+			else
+				a.right(href='/logout/') Sign out
 
 		main
 			block content

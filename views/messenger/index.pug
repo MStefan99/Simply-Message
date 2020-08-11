@@ -1,0 +1,34 @@
+extends ../layout
+
+block content
+	div.container-xl.mt-1#messenger-container
+		div#chat-container
+			div.header.bg-light
+				button.btn-outline-primary Settings
+				nav
+					button.btn-outline-secondary.d-none.d-lg-inline My profile
+					button.btn-outline-secondary New chat
+					button.btn-outline-secondary New group
+			div#chats
+				div.chat
+					h4 Contact name
+					p Last message
+				div.chat
+					h4 Contact name
+					p Last message
+		div#message-container.d-none.d-md-flex
+			div.header.bg-light
+				div#contact-info
+					h4.mt-0 Contact name
+					p.mb-0 Last seen
+				nav
+					button.btn-outline-secondary.right Profile
+			div#messages
+				div.message.py-3
+					p Message text
+					span  12:00
+				div.message
+					p Message text
+					span  12:01
+			div.dock.py-2
+				input(placeholder='Write a message...')

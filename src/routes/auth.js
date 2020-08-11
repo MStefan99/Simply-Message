@@ -2,21 +2,12 @@
 
 const express = require('express');
 const crypto = require('crypto');
-const MongoClient = require('mongodb').MongoClient;
 
 const sign = require('../lib/sign');
+const openDB = require('../lib/db');
+const {sessionCookie} = require('../lib/cookie');
 
-const url = 'mongodb://localhost:27017';
 const secret = 'Simply Message very secret key!';
-const sessionSecret = 'Simply Message session secret key';
-
-const client = new MongoClient(url, {useUnifiedTopology: true});
-
-
-async function openDB(name) {
-	const conn = await client.connect();
-	return conn.db(name);
-}
 
 
 (async function init() {
@@ -61,7 +52,7 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
 	const db = await openDB('simply_message');
 	const users = db.collection('users');
-	const user = await users.find({username: req.body.username}).next();
+	const user = await users.findOne({username: req.body.username});
 	const hmac = crypto.createHmac('sha256', secret);
 
 	if (!user) {
@@ -72,15 +63,22 @@ router.post('/login', async (req, res) => {
 		res.send('Wrong password');
 	} else {
 		const session = {
-			user: user._id,
+			userID: user._id,
 			time: Date.now(),
 			ip: req.ip,
 			ua: req.get('User-Agent'),
 		};
 
-		res.cookie('Session', sign.sign(session));
-		res.redirect(303, '/messages/');
+		res.cookie(sessionCookie.cookieName, sign.sign(session),
+			sessionCookie.options);
+		res.redirect(303, '/messenger/');
 	}
+});
+
+
+router.get('/logout', (req, res) => {
+	res.clearCookie(sessionCookie.cookieName, sessionCookie.options)
+	res.redirect(303, '/');
 });
 
 

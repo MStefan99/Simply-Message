@@ -17,6 +17,14 @@ color-light-warning = #fff3cd
 color-light-info = #d1ecf1
 color-light-light = #fff
 color-light-dark = #d6d8d9
+spacer = 1rem
+sizes = 'sm' 'md' 'lg' 'xl'
+displays = inline inline-block block flex inline-flex \
+table table-row table-cell
+size-sm = 425px
+size-md = 768px
+size-lg = 1024px
+size-xl = 1440px
 colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
 'light' 'dark'
 all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
@@ -25,6 +33,7 @@ all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
 
 html
 	font-family sans-serif
+	scroll-behavior smooth
 
 	*
 		box-sizing border-box
@@ -33,12 +42,6 @@ html
 		text-decoration none
 
 	body
-		margin 0
-		display flex
-		flex-flow column nowrap
-		justify-content space-between
-		min-height 100%
-
 		// Utility styles
 
 		// Backgrounds
@@ -79,6 +82,7 @@ html
 			padding 2em
 			background-color darken(color-light, 10%)
 			border-radius 20px
+			margin-bottom 2em
 
 		// Text
 
@@ -88,11 +92,107 @@ html
 		.light
 			font-weight normal
 
+		// Containers
+
+		.container
+			width 100%
+
+			for size in sizes
+				@media screen and (min-width size- + size)
+					width size- + size
+
+		.container-fluid
+			width 100%
+
+		for size in sizes
+			.container-{size}
+				width 100%
+
+				for querySize in sizes
+					if size- + querySize <= size- + size
+						@media screen and (min-width size- + querySize)
+							width size- + querySize
+
+		// Spacing
+
+		for type in 'm' 'p'
+			for side in 't' 'b' 'l' 'r' 'x' 'y'
+				for spacing in '0' '1' '2' '3' '4' '5' 'auto'
+					.{type}{side}-{spacing}
+						if type == 'm'
+							spacingType = margin
+						else if type == 'p'
+							spacingType = padding
+
+						if side == 't'
+							spacingSide = top
+						else if side == 'b'
+							spacingSide = bottom
+						else if side == 'l'
+							spacingSide = left
+						else if side == 'r'
+							spacingSide = right
+						else if side == 'x'
+							spacingSide = left right
+						else if side == 'y'
+							spacingSide = top bottom
+
+						if spacing == '0'
+							spacingSpace = 0
+						else if spacing == '1'
+							spacingSpace = spacer * .25
+						else if spacing == '2'
+							spacingSpace = spacer * .5
+						else if spacing == '3'
+							spacingSpace = spacer
+						else if spacing == '4'
+							spacingSpace = spacer * 1.5
+						else if spacing == '5'
+							spacingSpace = spacer * 3
+						else if spacing == 'auto'
+							spacingSpace = auto
+
+						for s in spacingSide
+							{spacingType}-{s} spacingSpace
+
+		// Display
+
+		.d-none
+			display none !important
+
+		for display in displays
+			.d-{display}
+				display display !important
+
+			for size in sizes
+				.d-{size}-{display}
+					@media screen and (min-width size- + size)
+						display display !important
+
+		for size in sizes
+			.d-{size}-none
+				@media screen and (min-width size- + size)
+					display none !important
+
+		// Shadows
+		.shadow-none
+			box-shadow none
+
+		.shadow-sm
+			box-shadow 0 .125rem .25rem #00000014
+
+		.shadow
+			box-shadow 0 .5rem 1rem #00000028
+
+		.shadow-lg
+			box-shadow 0 1rem 3rem #0000003c
+
 		// Controls
 
 		button, .btn
 			display inline-block
 			color color-dark
+			background-color transparent
 			margin .6em
 			margin-left 0
 			padding .7em
@@ -162,30 +262,36 @@ html
 		form
 			display block
 
-			label
-				display inline-block
-				margin 1em 1em .4em 0
+		label
+			display inline-block
+			margin 1em 1em .4em 0
 
-			input, input[type=email], input[type=password],
-			input[type=search], input[type=text], input[type=email], textarea
-				display block
-				width 100%
-				margin 0
-				padding .75em
-				border-radius 5px
-				border 1px solid color-light-dark
-				transition box-shadow .2s ease-in
+		input, input[type=email], input[type=password],
+		input[type=search], input[type=text], input[type=email], textarea
+			display block
+			width 100%
+			margin 0
+			padding .75em
+			border-radius 5px
+			border 1px solid color-light-dark
+			transition box-shadow .2s ease-in
 
-				&:focus
-					outline none
-					box-shadow 0 0 0 3px transparentify(color-primary, color-primary, 40%)
+			&:focus
+				outline none
+				box-shadow 0 0 0 3px transparentify(color-primary, color-primary, 40%)
 
-			input[type=button], input[type=reset], input[type=submit]
-				width max-content
-				font-weight normal
-				margin-left 0
+		input[type=button], input[type=reset], input[type=submit]
+			width max-content
+			font-weight normal
+			margin-left 0
 
 		// End of utility styles
+
+		margin 0
+		display flex
+		flex-flow column nowrap
+		justify-content space-between
+		min-height 100vh
 
 		header
 			font-size 1.4em
@@ -201,15 +307,38 @@ html
 				display inline
 
 		main
-			margin 1em auto
+			display flex
+			margin 0 auto
 			flex-grow 1
-			width 95%
+			min-height 100%
 
-			@media screen and (min-width 425px)
-				width 85%
+			div#messenger-container
+				display flex
+				flex-flow row nowrap
+				align-content stretch
+				min-height 100%
 
-			@media screen and (min-width 768px)
-				width 75%
+				div#chat-container
+					display flex
+					flex-flow column nowrap
+					justify-content space-between
+					flex 1 0 40%
 
-			@media screen and (min-width 1024px)
-				width 55%
+					div#chats
+						flex 1
+
+				div#message-container
+					display flex
+					flex-flow column nowrap
+					justify-content space-between
+					flex 1 0 60%
+
+					div#messages
+						flex 1
+
+				div#chat-container .header, div#message-container .header
+					display flex
+					flex-flow row nowrap
+					justify-content space-between
+					align-content center
+					padding .4em

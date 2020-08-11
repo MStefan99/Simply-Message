@@ -19,6 +19,7 @@ function sign(data) {
 	return `${encodedData}.${signature}`
 }
 
+
 function verify(signedData){
 	const [encodedData, receivedSignature] = signedData.split('.');
 
@@ -36,6 +37,7 @@ function verify(signedData){
 		valid: receivedSignature === signature
 	}
 }
+
 
 module.exports = {
 	sign: sign,

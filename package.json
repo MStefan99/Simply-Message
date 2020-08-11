@@ -1,15 +1,16 @@
 {
-  "name": "messenger",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "start": "node app.js",
-    "init": "mongod"
-  },
-  "dependencies": {
-    "cookie-parser": "~1.4.4",
-    "express": "~4.16.1",
-    "mongodb": "^3.5.9",
-    "pug": "2.0.0-beta11"
-  }
+	"name": "messenger",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"start": "node app.js",
+		"init": "mongod"
+	},
+	"dependencies": {
+		"cookie-parser": "^1.4.4",
+		"express": "^4.17.1",
+		"mongodb": "^3.6.0",
+		"pug": "^2.0.4",
+		"ws": "^7.3.1"
+	}
 }

@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 
+const middleware = require('./src/lib/middleware');
 const indexRouter = require('./src/routes/index');
 const authRouter = require('./src/routes/auth');
 const messengerRouter = require('./src/routes/messenger');
@@ -18,9 +19,12 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(middleware.getSession());
+app.use(middleware.getUser());
+
 app.use('/', indexRouter);
 app.use('/', authRouter);
-app.use('/messages', messengerRouter);
+app.use('/messenger', messengerRouter);
 
 
 app.use(function (err, req, res, next) {
