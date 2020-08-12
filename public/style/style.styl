@@ -1,4 +1,5 @@
 ease-in = cubic-bezier(0, .6, .4, 1)
+
 color-white = #fff
 color-black = #000
 color-light = #f8f9fa
@@ -9,14 +10,15 @@ color-success = #28a745
 color-danger = #dc3545
 color-warning = #ffc107
 color-info = #17a2b8
+
 spacer = 1rem
-sizes = 'sm' 'md' 'lg' 'xl'
-displays = inline inline-block block flex inline-flex \
-table table-row table-cell none
-size-sm = 425px
-size-md = 768px
-size-lg = 1024px
-size-xl = 1440px
+sizes = '' 'sm' 'md' 'lg' 'xl'
+displays = 'inline' 'inline-block' 'block' 'flex' 'inline-flex' \
+'table' 'table-row' 'table-cell' 'none'
+breakpoint-sm = 425px
+breakpoint-md = 768px
+breakpoint-lg = 1024px
+breakpoint-xl = 1440px
 colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
 'light' 'dark'
 all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
@@ -24,10 +26,33 @@ all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
 
 
 negate(unit)
-	if unit != auto and unit != 0
+	if unit is a 'unit' and unit != auto and unit != 0
 		- unit
 	else
 		unit
+
+
+getPostfix(value)
+	if value != ''
+		\- + value
+
+
+getSize(size)
+	s = breakpoint- + size
+	if s is a 'unit'
+		s
+	else
+		100%
+
+
+media(size)
+	s = breakpoint- + size
+	if s is a 'unit' and s > 0
+		@media screen and (min-width s)
+			{block}
+	else
+		{block}
+
 
 flex-prefix(type)
 	if type == between or type == around
@@ -101,78 +126,75 @@ html
 
 		// Containers
 
-		.container
-			width 100%
+		for size in sizes
+			+media(size)
+				.container
+					width getSize(size)
 
-			for size in sizes
-				@media screen and (min-width size- + size)
-					width size- + size
+				for querySize in sizes
+					.container{getPostfix(querySize)}
+						if getSize(querySize) <= getSize(size) and querySize != ''
+							max-width getSize(querySize)
 
 		.container-fluid
 			width 100%
 
-		for size in sizes
-			.container-{size}
-				width 100%
-
-				for querySize in sizes
-					if size- + querySize <= size- + size
-						@media screen and (min-width size- + querySize)
-							width size- + querySize
-
 		// Spacing
 
-		for side in 't' 'b' 'l' 'r' 'x' 'y' ''
-			for spacing in '0' '1' '2' '3' '4' '5' 'auto'
-				for type in 'm' 'p'
-					if type == 'm'
-						spacingType = margin
-					else if type == 'p'
-						spacingType = padding
+		for size in sizes
+			+media(size)
+				for side in '' 't' 'b' 'l' 'r' 'x' 'y'
+					for spacing in '0' '1' '2' '3' '4' '5' 'auto'
+						for type in 'm' 'p'
+							if type == 'm'
+								spacingType = margin
+							else if type == 'p'
+								spacingType = padding
 
-					if side == 't'
-						spacingSide = top
-					else if side == 'b'
-						spacingSide = bottom
-					else if side == 'l'
-						spacingSide = left
-					else if side == 'r'
-						spacingSide = right
-					else if side == 'x'
-						spacingSide = left right
-					else if side == 'y'
-						spacingSide = top bottom
-					else if !side
-						spacingSide = ''
+							if side == 't'
+								spacingSide = top
+							else if side == 'b'
+								spacingSide = bottom
+							else if side == 'l'
+								spacingSide = left
+							else if side == 'r'
+								spacingSide = right
+							else if side == 'x'
+								spacingSide = left right
+							else if side == 'y'
+								spacingSide = top bottom
+							else if !side
+								spacingSide = ''
 
-					if spacing == '0'
-						spacingSpace = 0
-					else if spacing == '1'
-						spacingSpace = spacer * .25
-					else if spacing == '2'
-						spacingSpace = spacer * .5
-					else if spacing == '3'
-						spacingSpace = spacer
-					else if spacing == '4'
-						spacingSpace = spacer * 1.5
-					else if spacing == '5'
-						spacingSpace = spacer * 3
-					else if spacing == 'auto'
-						spacingSpace = auto
+							if spacing == '0'
+								spacingSpace = 0
+							else if spacing == '1'
+								spacingSpace = spacer * .25
+							else if spacing == '2'
+								spacingSpace = spacer * .5
+							else if spacing == '3'
+								spacingSpace = spacer
+							else if spacing == '4'
+								spacingSpace = spacer * 1.5
+							else if spacing == '5'
+								spacingSpace = spacer * 3
+							else if spacing == 'auto'
+								spacingSpace = auto
 
-					.{type}{side}-{spacing}
-						for s in spacingSide
-							if spacingSide
-								{spacingType}-{s} spacingSpace
-							else
-								{spacingType} spacingSpace
+							.{type}{side}{getPostfix(size)}-{spacing}
+								for s in spacingSide
+									if spacingSide
+										{spacingType}-{s} spacingSpace
+									else
+										{spacingType} spacingSpace
 
-				.m{side}-n{spacing}
-					for s in spacingSide
-						if spacingSide
-							margin-{s} negate(spacingSpace)
-						else
-							margin negate(spacingSpace)
+						if spacing != 'auto' and spacing != '0'
+							.m{side}{getPostfix(size)}-n{spacing}
+								for s in spacingSide
+									if spacingSide
+										margin-{s} negate(spacingSpace)
+									else
+										margin negate(spacingSpace)
 
 		// Borders
 
@@ -192,15 +214,11 @@ html
 
 		// Display
 
-		for display in displays
-			.d-{display}
-				display display !important
-
 		for size in sizes
-			for display in displays
-				@media screen and (min-width size- + size)
-					.d-{size}-{display}
-						display display !important
+			+media(size)
+				for display in displays
+					.d{getPostfix(size)}-{display}
+						display unquote(display) !important
 
 		// Flex
 
@@ -210,82 +228,48 @@ html
 		.flex-nowrap
 			flex-wrap nowrap
 
-		for direction in row column
-			.flex-{direction}
-				flex-direction direction
-			.flex-{direction}-reverse
-				flex-direction direction + -reverse
-
 		for size in sizes
-			for direction in row column
-				@media screen and (min-width size- + size)
-					.flex-{size}-{direction}
+			+media(size)
+				for direction in row column
+					.flex{getPostfix(size)}-{direction}
 						flex-direction direction
 
-					.flex-{size}-{direction}-reverse
+					.flex{getPostfix(size)}-{direction}-reverse
 						flex-direction direction + -reverse
 
-		for type in start end center between around
-			.justify-content-{type}
-				justify-content flex-prefix(type)
-
 		for size in sizes
-			for type in start end center between around
-				@media screen and (min-width size- + size)
-					.justify-content-{size}-{type}
+			+media(size)
+				for type in start end center between around
+					.justify-content{getPostfix(size)}-{type}
 						justify-content flex-prefix(type)
 
-		for type in start end center baseline stretch
-			.align-items-{type}
-				align-items flex-prefix(type)
-
-			.align-self-{type}
-				align-self flex-prefix(type)
-
 		for size in sizes
-			for type in start end center baseline stretch
-				@media screen and (min-width size- + size)
-					.align-items-{size}-{type}
+			+media(size)
+				for type in start end center baseline stretch
+					.align-items{getPostfix(size)}-{type}
 						align-items flex-prefix(type)
 
-					.align-self-{size}-{type}
+					.align-self{getPostfix(size)}-{type}
 						align-self flex-prefix(type)
 
 		.flex-fill
 			flex 1 1 auto
 
-		for enabled in 0 1
-			.flex-grow-{enabled}
-				flex-grow enabled
-
-			.flex-shrink-{enabled}
-				flex-shrink enabled
-
 		for size in sizes
-			for enabled in 0 1
-				@media screen and (min-width size- + size)
-					.flex-{size}-grow-{enabled}
+			+media(size)
+				for enabled in 0 1
+					.flex{getPostfix(size)}-grow-{enabled}
 						flex-grow enabled
 
-					.flex-{size}-shrink-{enabled}
+					.flex{getPostfix(size)}-shrink-{enabled}
 						flex-shrink enabled
-
 
 		// Floats
 
-		.float-left
-			float left
-
-		.float-right
-			float right
-
-		.float-none
-			float none
-
 		for size in sizes
-			for side in left right none
-				@media screen and (min-width size- + size)
-					.float-{size}-{side}
+			+media(size)
+				for side in left right none
+					.float{getPostfix(size)}-{side}
 						float side
 
 		// Shadows
@@ -306,7 +290,6 @@ html
 
 		button, .btn
 			display inline-block
-			color color-dark
 			background-color transparent
 			margin .6em
 			margin-left 0
@@ -321,6 +304,9 @@ html
 			border-color .2s ease-in,
 			background-color .2s ease-in,
 			box-shadow .2s ease-in
+
+			&:last-child
+				margin-right 0
 
 			&:focus
 				outline 1px
@@ -391,8 +377,6 @@ html
 		input[type=search], input[type=text], input[type=email], textarea
 			display block
 			width 100%
-			margin .6em
-			margin-left 0
 			padding .7em
 			font-size 1em
 			border-radius 5px
@@ -479,4 +463,3 @@ html
 					flex-flow row nowrap
 					justify-content space-between
 					align-content center
-					padding .4em

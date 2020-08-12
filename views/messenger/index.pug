@@ -1,9 +1,9 @@
 extends ../layout
 
 block content
-	div.container-xl.mt-1#messenger-container
+	div.container#messenger-container
 		div#chat-container.border-left.border-right
-			div.header.bg-light
+			div.header.bg-light.p-2.border-bottom
 				button.btn-outline-primary Settings
 				nav
 					button.btn-outline-secondary.d-none.d-xl-inline My profile
@@ -19,10 +19,11 @@ block content
 					span.chat-time.float-right.ml-2 12:07
 					p.chat-message Last message text
 		div#message-container.d-none.d-md-flex.border-right
-			div.header.bg-light
+			div.header.bg-light.p-2.border-bottom
+				button.btn-outline-secondary.d-inline.d-md-none Back
 				div#contact-info.ml-1
-					h4.mt-0 Contact name
-					p.mb-0 Last seen
+					h4.m-2 Contact name
+					p.m-2 Last seen
 				nav
 					button.btn-outline-secondary.right Profile
 			div#messages.mx-3
