@@ -9,18 +9,10 @@ color-success = #28a745
 color-danger = #dc3545
 color-warning = #ffc107
 color-info = #17a2b8
-color-light-primary = #cce5ff
-color-light-secondary = #e2e3e5
-color-light-success = #d4edda
-color-light-danger = #f8d7da
-color-light-warning = #fff3cd
-color-light-info = #d1ecf1
-color-light-light = #fff
-color-light-dark = #d6d8d9
 spacer = 1rem
 sizes = 'sm' 'md' 'lg' 'xl'
 displays = inline inline-block block flex inline-flex \
-table table-row table-cell
+table table-row table-cell none
 size-sm = 425px
 size-md = 768px
 size-lg = 1024px
@@ -31,11 +23,26 @@ all-colors = 'primary' 'secondary' 'success' 'danger' 'warning' 'info'\
 'light' 'dark' 'white' 'black'
 
 
+negate(unit)
+	if unit != auto and unit != 0
+		- unit
+	else
+		unit
+
+flex-prefix(type)
+	if type == between or type == around
+		space- + type
+	else if type == start or type == end
+		flex- + type
+	else
+		type
+
+
 html
 	font-family sans-serif
 	scroll-behavior smooth
 
-	*
+	*, ::after, ::before
 		box-sizing border-box
 
 	a
@@ -71,9 +78,9 @@ html
 
 			for clr in colors
 				&.alert-{clr}
-					background color-light- + clr
-					color darken(color-light- + clr, 50%)
-					border 1.2px solid darken(color-light- + clr, 20%)
+					background lighten(color- + clr, 80%)
+					color darken(color- + clr, 30%)
+					border 1.2px solid lighten(color- + clr, 70%)
 
 		.hidden
 			display none !important
@@ -115,66 +122,174 @@ html
 
 		// Spacing
 
-		for type in 'm' 'p'
-			for side in 't' 'b' 'l' 'r' 'x' 'y'
-				for spacing in '0' '1' '2' '3' '4' '5' 'auto'
+		for side in 't' 'b' 'l' 'r' 'x' 'y' ''
+			for spacing in '0' '1' '2' '3' '4' '5' 'auto'
+				for type in 'm' 'p'
+					if type == 'm'
+						spacingType = margin
+					else if type == 'p'
+						spacingType = padding
+
+					if side == 't'
+						spacingSide = top
+					else if side == 'b'
+						spacingSide = bottom
+					else if side == 'l'
+						spacingSide = left
+					else if side == 'r'
+						spacingSide = right
+					else if side == 'x'
+						spacingSide = left right
+					else if side == 'y'
+						spacingSide = top bottom
+					else if !side
+						spacingSide = ''
+
+					if spacing == '0'
+						spacingSpace = 0
+					else if spacing == '1'
+						spacingSpace = spacer * .25
+					else if spacing == '2'
+						spacingSpace = spacer * .5
+					else if spacing == '3'
+						spacingSpace = spacer
+					else if spacing == '4'
+						spacingSpace = spacer * 1.5
+					else if spacing == '5'
+						spacingSpace = spacer * 3
+					else if spacing == 'auto'
+						spacingSpace = auto
+
 					.{type}{side}-{spacing}
-						if type == 'm'
-							spacingType = margin
-						else if type == 'p'
-							spacingType = padding
-
-						if side == 't'
-							spacingSide = top
-						else if side == 'b'
-							spacingSide = bottom
-						else if side == 'l'
-							spacingSide = left
-						else if side == 'r'
-							spacingSide = right
-						else if side == 'x'
-							spacingSide = left right
-						else if side == 'y'
-							spacingSide = top bottom
-
-						if spacing == '0'
-							spacingSpace = 0
-						else if spacing == '1'
-							spacingSpace = spacer * .25
-						else if spacing == '2'
-							spacingSpace = spacer * .5
-						else if spacing == '3'
-							spacingSpace = spacer
-						else if spacing == '4'
-							spacingSpace = spacer * 1.5
-						else if spacing == '5'
-							spacingSpace = spacer * 3
-						else if spacing == 'auto'
-							spacingSpace = auto
-
 						for s in spacingSide
-							{spacingType}-{s} spacingSpace
+							if spacingSide
+								{spacingType}-{s} spacingSpace
+							else
+								{spacingType} spacingSpace
+
+				.m{side}-n{spacing}
+					for s in spacingSide
+						if spacingSide
+							margin-{s} negate(spacingSpace)
+						else
+							margin negate(spacingSpace)
+
+		// Borders
+
+		.border
+			border 1px solid darken(color-light, 10%)
+
+		for side in top bottom left right
+			.border-{side}
+				border-{side} 1px solid darken(color-light, 10%)
+
+			.border-{side}-{0}
+				border-{side} none
+
+		for clr in all-colors
+			.border-{clr}
+				border-color color- + clr
 
 		// Display
-
-		.d-none
-			display none !important
 
 		for display in displays
 			.d-{display}
 				display display !important
 
-			for size in sizes
-				.d-{size}-{display}
-					@media screen and (min-width size- + size)
+		for size in sizes
+			for display in displays
+				@media screen and (min-width size- + size)
+					.d-{size}-{display}
 						display display !important
 
+		// Flex
+
+		.flex-wrap
+			flex-wrap wrap
+
+		.flex-nowrap
+			flex-wrap nowrap
+
+		for direction in row column
+			.flex-{direction}
+				flex-direction direction
+			.flex-{direction}-reverse
+				flex-direction direction + -reverse
+
 		for size in sizes
-			.d-{size}-none
+			for direction in row column
 				@media screen and (min-width size- + size)
-					display none !important
+					.flex-{size}-{direction}
+						flex-direction direction
+
+					.flex-{size}-{direction}-reverse
+						flex-direction direction + -reverse
+
+		for type in start end center between around
+			.justify-content-{type}
+				justify-content flex-prefix(type)
+
+		for size in sizes
+			for type in start end center between around
+				@media screen and (min-width size- + size)
+					.justify-content-{size}-{type}
+						justify-content flex-prefix(type)
+
+		for type in start end center baseline stretch
+			.align-items-{type}
+				align-items flex-prefix(type)
+
+			.align-self-{type}
+				align-self flex-prefix(type)
+
+		for size in sizes
+			for type in start end center baseline stretch
+				@media screen and (min-width size- + size)
+					.align-items-{size}-{type}
+						align-items flex-prefix(type)
+
+					.align-self-{size}-{type}
+						align-self flex-prefix(type)
+
+		.flex-fill
+			flex 1 1 auto
+
+		for enabled in 0 1
+			.flex-grow-{enabled}
+				flex-grow enabled
+
+			.flex-shrink-{enabled}
+				flex-shrink enabled
+
+		for size in sizes
+			for enabled in 0 1
+				@media screen and (min-width size- + size)
+					.flex-{size}-grow-{enabled}
+						flex-grow enabled
+
+					.flex-{size}-shrink-{enabled}
+						flex-shrink enabled
+
+
+		// Floats
+
+		.float-left
+			float left
+
+		.float-right
+			float right
+
+		.float-none
+			float none
+
+		for size in sizes
+			for side in left right none
+				@media screen and (min-width size- + size)
+					.float-{size}-{side}
+						float side
 
 		// Shadows
+
 		.shadow-none
 			box-shadow none
 
@@ -262,6 +377,12 @@ html
 		form
 			display block
 
+		.form-row
+			display flex
+			flex-flow row nowrap
+			justify-content space-between
+			align-items center
+
 		label
 			display inline-block
 			margin 1em 1em .4em 0
@@ -270,14 +391,17 @@ html
 		input[type=search], input[type=text], input[type=email], textarea
 			display block
 			width 100%
-			margin 0
-			padding .75em
+			margin .6em
+			margin-left 0
+			padding .7em
+			font-size 1em
 			border-radius 5px
-			border 1px solid color-light-dark
+			border 1px solid darken(color-light, 10%)
 			transition box-shadow .2s ease-in
 
 			&:focus
 				outline none
+				border 1px solid lighten(color-primary, 40%)
 				box-shadow 0 0 0 3px transparentify(color-primary, color-primary, 40%)
 
 		input[type=button], input[type=reset], input[type=submit]
@@ -292,6 +416,12 @@ html
 		flex-flow column nowrap
 		justify-content space-between
 		min-height 100vh
+
+		.clickable
+			cursor pointer
+
+			&:hover
+				filter brightness(.9)
 
 		header
 			font-size 1.4em
@@ -327,6 +457,11 @@ html
 					div#chats
 						flex 1
 
+						div.chat
+							.chat-message
+								white-space nowrap
+								overflow-x hidden
+
 				div#message-container
 					display flex
 					flex-flow column nowrap
@@ -334,6 +469,9 @@ html
 					flex 1 0 60%
 
 					div#messages
+						display flex
+						flex-flow column nowrap
+						align-items flex-start
 						flex 1
 
 				div#chat-container .header, div#message-container .header
