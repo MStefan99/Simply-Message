@@ -26,7 +26,11 @@ router.post('/', async (req, res) => {  // Create message
 	const db = await openDB('simply_message');
 
 	const chats = db.collection('chats');
-	const message = {author: req.user._id, text: req.body.text}
+	const message = {
+		author: req.user._id,
+		text: req.body.text,
+		time: Date.now()
+	}
 	await chats.updateOne({_id: ObjectId(req.params.chatID)}, {
 		$push: {messages: message}
 	});

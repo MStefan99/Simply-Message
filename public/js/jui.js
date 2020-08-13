@@ -27,16 +27,30 @@ export default class Jui {
 	}
 
 
-	appendTo(target) {
-		if (target instanceof Jui) {
-			this.nodes.forEach((node) => {
-				target.nodes[0].appendChild(node);
-			});
-		} else {
-			this.nodes.forEach(node => {
-				target.appendChild(node);
-			});
+	append(element) {
+		if (!(element instanceof Jui)) {
+			element = new Jui(element);
 		}
+		if (!this.nodes.length) {
+			throw new Error('Trying to append to an empty object')
+		}
+		element.nodes.forEach((node) => {
+			this.nodes[this.nodes.length - 1].appendChild(node);
+		});
+		return this;
+	}
+
+
+	appendTo(target) {
+		if (!(target instanceof Jui)) {
+			target = new Jui(target);
+		}
+		if (!target.nodes.length) {
+			throw new Error('Trying to append to an empty object')
+		}
+		this.nodes.forEach((node) => {
+			target.nodes[target.nodes.length - 1].appendChild(node);
+		});
 		return this;
 	}
 

@@ -451,21 +451,21 @@ html
 			margin 0 auto
 			flex-grow 1
 
-			div#messenger-container
+			div#messenger
 				overflow hidden
 				display flex
 				flex-flow row nowrap
 				height 100vh
 				width 100vw
 
-				div#chat-container
+				div#chat-panel
 					display flex
 					flex-flow column nowrap
 					justify-content space-between
 					height inherit
 					flex 1 0 40%
 
-					div#chats
+					div#chat-container
 						height inherit
 						overflow-y auto
 						flex 1
@@ -475,14 +475,14 @@ html
 								white-space nowrap
 								overflow-x hidden
 
-				div#message-container
+				div#message-panel
 					display flex
 					flex-flow column nowrap
 					justify-content space-between
 					max-height inherit
 					flex 1 0 60%
 
-					div#messages
+					div#message-container
 						display flex
 						flex-flow column nowrap
 						align-items flex-start
@@ -490,7 +490,7 @@ html
 						overflow-y auto
 						flex 1
 
-				div#chat-container .header, div#message-container .header
+				div#chat-panel .header, div#message-panel .header
 					display flex
 					flex-flow row nowrap
 					justify-content space-between

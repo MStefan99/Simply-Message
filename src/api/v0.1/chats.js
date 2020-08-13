@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {  // Get all chats
 	const chats = db.collection('chats');
 	res.json(await chats.find({}, {
 		projection: {
-			messages: {$slice: -1},   // TODO: rename to lastMessage
+			messages: {$slice: -1},  // TODO: rename to lastMessage
 			invitees: 0,
 			desc: 0,
 			creatorID: 0

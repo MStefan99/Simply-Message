@@ -108,6 +108,17 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/webstorm
 
 # Custom rules
+
+# Environment
 node_modules/
-public/style/*.css
+
+# Compiled css
+public/style/**/*.css
+
+# Compided js
+public/js/*
+!public/js/**/*.coffee
+!public/js/jui.js
+
+# Package-lock
 package-lock.json
