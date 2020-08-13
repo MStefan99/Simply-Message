@@ -1,15 +1,15 @@
 extends ../layout
 
 block content
-	div.container#messenger-container
+	div.container-xl#messenger-container
 		div#chat-container.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
-				button.btn-outline-primary Settings
+				button#settings-button.btn-outline-primary Settings
 				nav
-					button.btn-outline-secondary.d-none.d-xl-inline My profile
-					button.btn-outline-secondary New chat
-					button.btn-outline-secondary.d-none.d-xl-inline New group
-			div#chats.mx-3
+					button#my-profile-button.btn-outline-secondary.d-none.d-xl-inline My profile
+					button#new-chat-button.btn-outline-secondary New chat
+					button#new-group-button.btn-outline-secondary.d-none.d-xl-inline New group
+			div#chats
 				div.chat.clickable.border-bottom
 					h4.chat-name Contact name
 					span.chat-time.float-right.ml-2 12:02
@@ -18,25 +18,75 @@ block content
 					h4.chat-name Contact name
 					span.chat-time.float-right.ml-2 12:07
 					p.chat-message Last message text
-		div#message-container.d-none.d-md-flex.border-right
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+				div.chat.clickable.border-bottom
+					h4.chat-name Contact name
+					span.chat-time.float-right.ml-2 12:07
+					p.chat-message Last message text
+		div#message-container.d-none.d-md-flex.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
-				button.btn-outline-secondary.d-inline.d-md-none Back
+				button#back-button.btn-outline-secondary.d-inline.d-md-none Back
 				div#contact-info.ml-1
 					h4.m-2 Contact name
 					p.m-2 Last seen
 				nav
-					button.btn-outline-secondary.right Profile
-			div#messages.mx-3
-				div.message.my-1
+					button#contact-profile-button.btn-outline-secondary.right Profile
+			div#messages
+				div.message
 					p Message text
 					span 12:00
-				div.message.my-1.align-self-end
+				div.message.align-self-end
 					p Message text
 					span 12:01
-				div.message.my-1
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
+					p Message text
+					span 12:02
+				div.message
 					p Message text
 					span 12:02
 			div.dock.py-2
-				div.form-row.mx-3
+				div.form-row.border-top.mx-3
 					input.mr-3(placeholder='Write a message...')
-					button.btn-primary Send
+					button#send-button.btn-primary Send
+	script(async type='module' src='/js/messenger.js')

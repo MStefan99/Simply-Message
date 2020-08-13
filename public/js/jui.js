@@ -1,0 +1,157 @@
+'use strict';
+
+function remove(node) {
+	node.parentNode.removeChild(node);
+}
+
+
+export default class Jui {
+	constructor(query) {
+		if (!this) {
+			throw new Error('Please call Jui constructor with the new keyword');
+		}
+
+		if (query instanceof Node) {
+			this.nodes = [query];
+		} else if (query instanceof NodeList) {
+			this.nodes = Array.from(query);
+		} else if (query.match(/^<.*>$/)) {
+			this.nodes = Array.from(new DOMParser()
+				.parseFromString(query, 'text/html')
+				.body
+				.childNodes);
+		} else {
+			this.nodes = Array.from(document
+				.querySelectorAll(query));
+		}
+	}
+
+
+	appendTo(target) {
+		if (target instanceof Jui) {
+			this.nodes.forEach((node) => {
+				target.nodes[0].appendChild(node);
+			});
+		} else {
+			this.nodes.forEach(node => {
+				target.appendChild(node);
+			});
+		}
+		return this;
+	}
+
+
+	html(html) {
+		if (!html) {  // Get html
+			let html = '';
+
+			this.nodes.forEach((node) => {
+				html += node.innerHTML;
+			});
+			return html;
+		} else {  // Set html
+			this.nodes.forEach(node => {
+				node.innerHTML = html;
+			});
+			return this;
+		}
+	}
+
+
+	text(text) {
+		if (!text) {  // Get text
+			let text = '';
+
+			this.nodes.forEach((node) => {
+				text += node.innerText;
+			});
+			return text;
+		} else {  // Set text
+			this.nodes.forEach(node => {
+				node.innerText = text;
+			});
+			return this;
+		}
+	}
+
+
+	css(property, value) {
+		if (!value) {  // Get css
+			return this.nodes[0].style[property];
+		} else {  // Set css
+			this.nodes.forEach(node => {
+				node.style[property] = value;
+			});
+			return this;
+		}
+	}
+
+
+	prop(propertyName, value) {
+		if (!value) {  // Get css
+			return this.nodes[0].getAttribute(propertyName);
+		} else {  // Set css
+			this.nodes.forEach(node => {
+				node.setAttribute(propertyName, value);
+			});
+			return this;
+		}
+	}
+
+
+	addClass(...classNames) {
+		this.nodes.forEach(node => {
+			node.classList.add(...classNames);
+		});
+		return this;
+	}
+
+
+	hasClass(className) {
+		this.nodes.forEach(node => {
+			if (node.classList.contains(className)) {
+				return true;
+			}
+		});
+		return false;
+	}
+
+
+	toggleClass(className) {
+		this.nodes.forEach(node => {
+			node.classList.toggle(className);
+		});
+		return this;
+	}
+
+
+	removeClass(...classNames) {
+		this.nodes.forEach(node => {
+			node.classList.remove(...classNames);
+		});
+		return this;
+	}
+
+
+	addEventListener(type, handler) {
+		this.nodes.forEach(node => {
+			node.addEventListener(type, handler);
+		});
+		return this;
+	}
+
+
+	removeEventListener(type, handler) {
+		this.nodes.forEach(node => {
+			node.removeEventListener(type, handler);
+		});
+		return this;
+	}
+
+
+	remove() {
+		this.nodes.forEach((node) => {
+			remove(node);
+		});
+	}
+}
