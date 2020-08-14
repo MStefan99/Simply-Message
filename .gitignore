@@ -115,10 +115,5 @@ node_modules/
 # Compiled css
 public/style/**/*.css
 
-# Compided js
-public/js/*
-!public/js/**/*.coffee
-!public/js/jui.js
-
 # Package-lock
 package-lock.json

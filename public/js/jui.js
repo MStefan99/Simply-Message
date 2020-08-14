@@ -15,7 +15,7 @@ export default class Jui {
 			this.nodes = [query];
 		} else if (query instanceof NodeList) {
 			this.nodes = Array.from(query);
-		} else if (query.match(/^<.*>$/)) {
+		} else if (query.match(/^\s*<.*>$/s)) {
 			this.nodes = Array.from(new DOMParser()
 				.parseFromString(query, 'text/html')
 				.body
