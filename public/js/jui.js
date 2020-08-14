@@ -15,7 +15,7 @@ export default class Jui {
 			this.nodes = [query];
 		} else if (query instanceof NodeList) {
 			this.nodes = Array.from(query);
-		} else if (query.match(/^\s*<.*>$/s)) {
+		} else if (query.match(/^\s*<.*>\s*$/s)) {
 			this.nodes = Array.from(new DOMParser()
 				.parseFromString(query, 'text/html')
 				.body
@@ -102,11 +102,23 @@ export default class Jui {
 
 
 	prop(propertyName, value) {
-		if (!value) {  // Get css
+		if (!value) {  // Get property
 			return this.nodes[0].getAttribute(propertyName);
-		} else {  // Set css
+		} else {  // Set property
 			this.nodes.forEach(node => {
 				node.setAttribute(propertyName, value);
+			});
+			return this;
+		}
+	}
+
+
+	val(value) {
+		if (!value) {  // Get value
+			return this.nodes[0].value;
+		} else {  // Set value
+			this.nodes.forEach(node => {
+				node.value = value;
 			});
 			return this;
 		}

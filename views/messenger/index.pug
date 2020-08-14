@@ -8,7 +8,7 @@ block content
 				nav
 					button#my-profile-button.btn-outline-secondary.d-none.d-xl-inline My profile
 					button#new-chat-button.btn-outline-secondary New chat
-					button#new-group-button.btn-outline-secondary.d-none.d-xl-inline New group
+					button#new-channel-button.btn-outline-secondary.d-none.d-xl-inline New channel
 			div#chat-container
 		div#message-panel.d-none.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
@@ -21,6 +21,7 @@ block content
 			div#message-container
 			div.dock.py-2
 				div.form-row.border-top.mx-3
-					input.mr-3(placeholder='Write a message...')
+					input#message-input.mr-3(placeholder='Write a message...')
 					button#send-button.btn-primary Send
+	div#page-blocker.d-none
 	script(async type='module' src='/js/messenger.js')

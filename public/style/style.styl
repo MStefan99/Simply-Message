@@ -495,3 +495,20 @@ html
 					flex-flow row nowrap
 					justify-content space-between
 					align-items center
+
+		div#page-blocker
+			position fixed
+			top 0
+			left 0
+			height 100vh
+			width 100vw
+			background-color transparentify(color-dark, color-dark, 60%)
+
+		div.popup
+			position fixed
+			top 40%
+			left 50%
+			transform translate(-50%, -50%)
+			padding 2em 3em
+			background-color color-light
+			border-radius 10px
