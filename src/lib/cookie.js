@@ -4,7 +4,7 @@ module.exports = {
 		options: {
 			maxAge: 604800000,  // 1 week in ms
 			sameSite: 'strict',
-			httpOnly: true,
+			httpOnly: false,
 			secure: !process.env.NO_HTTPS
 		}
 	}

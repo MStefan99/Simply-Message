@@ -92,6 +92,15 @@ html
 			.text-{clr}
 				color color- + clr
 
+		.text-muted
+			color lighten(color-dark, 25)
+
+		.text-white-50
+			color #ffffff80
+
+		.text-black-50
+			color #00000080
+
 		// Alerts
 
 		.alert
@@ -124,6 +133,15 @@ html
 		.light
 			font-weight normal
 
+		.user-select-none
+			user-select none
+
+		.user-select-all
+			user-select all
+
+		.user-select-auto
+			user-select auto
+
 		// Containers
 
 		for size in sizes
@@ -140,6 +158,7 @@ html
 			width 100%
 
 		// Dimensions
+
 		for size in 25 50 75 100
 			.w-{size}
 				width size + '%'
@@ -452,7 +471,7 @@ html
 			flex-grow 1
 
 			div#messenger
-				overflow hidden
+				overflow-y hidden
 				display flex
 				flex-flow row nowrap
 				height 100vh
@@ -471,7 +490,10 @@ html
 						flex 1
 
 						div.chat
-							.chat-message
+							.chat-time
+								max-width 60%
+
+							.chat-last-message
 								white-space nowrap
 								overflow-x hidden
 
@@ -489,6 +511,11 @@ html
 						height inherit
 						overflow-y auto
 						flex 1
+
+						div.message
+							max-width 75%
+							border-radius 10px
+							background-color darken(color-light, 5%)
 
 				div#chat-panel .header, div#message-panel .header
 					display flex
@@ -509,6 +536,8 @@ html
 			top 40%
 			left 50%
 			transform translate(-50%, -50%)
-			padding 2em 3em
+			width max-content
+			max-width 90vw
+			padding 2em clamp(1em, 3vw, 4em)
 			background-color color-light
 			border-radius 10px

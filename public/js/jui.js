@@ -9,6 +9,8 @@ export default class Jui {
 	constructor(query) {
 		if (!this) {
 			throw new Error('Please call Jui constructor with the new keyword');
+		} else if (query === undefined) {
+			throw new Error('No query provided');
 		}
 
 		if (query instanceof Node) {
@@ -56,7 +58,7 @@ export default class Jui {
 
 
 	html(html) {
-		if (!html) {  // Get html
+		if (html === undefined) {  // Get html
 			let html = '';
 
 			this.nodes.forEach((node) => {
@@ -73,7 +75,7 @@ export default class Jui {
 
 
 	text(text) {
-		if (!text) {  // Get text
+		if (text === undefined) {  // Get text
 			let text = '';
 
 			this.nodes.forEach((node) => {
@@ -90,7 +92,7 @@ export default class Jui {
 
 
 	css(property, value) {
-		if (!value) {  // Get css
+		if (value === undefined) {  // Get css
 			return this.nodes[0].style[property];
 		} else {  // Set css
 			this.nodes.forEach(node => {
@@ -102,7 +104,7 @@ export default class Jui {
 
 
 	prop(propertyName, value) {
-		if (!value) {  // Get property
+		if (value === undefined) {  // Get property
 			return this.nodes[0].getAttribute(propertyName);
 		} else {  // Set property
 			this.nodes.forEach(node => {
@@ -114,7 +116,7 @@ export default class Jui {
 
 
 	val(value) {
-		if (!value) {  // Get value
+		if (value === undefined) {  // Get value
 			return this.nodes[0].value;
 		} else {  // Set value
 			this.nodes.forEach(node => {

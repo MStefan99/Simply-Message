@@ -5,6 +5,25 @@ import Jui from '/js/jui.js';
 
 
 let currentChat;
+let currentSession;
+
+
+function getCookie(name) {
+	const cookies = document.cookie.split('; ');
+
+	const re = new RegExp(`^${name}=`);
+	return cookies.find(row => re.test(row))
+		.replace(/^.*=/, '');
+}
+
+
+function getSession() {
+	const signature = getCookie('Session');
+
+	const session = signature.replace(/\..*$/, '');
+	return JSON.parse(
+		atob(decodeURIComponent(session)));
+}
 
 
 function remove(node) {
@@ -74,31 +93,37 @@ const newChatButton = new Jui('#new-chat-button')
 	.addEventListener('click', () => {
 		const popup = new Jui(`
 		<div class="popup">
-			<form>
+			<form id="new-chat-form">
 				<h2>New chat</h2>
 				<label for="new-chat-name-input">New chat name</label>
-				<input type="text" id="new-chat-name-input" name="name" required>
-				<input type="button" id="new-chat-popup-button" class="btn btn-success" value="Create"></input>
+				<input type="text" id="new-chat-name-input" name="name" autocomplete="off">
+				<input type="submit" class="btn btn-success" value="Create"></input>
 			</form>
 		</div>
-		`).appendTo(main);
+		`)
+			.appendTo(main);
 
-		new Jui('#new-chat-popup-button')
-			.addEventListener('click', async () => {
+		new Jui('#new-chat-form')
+			.addEventListener('submit', async (event) => {
+				event.preventDefault();
 				const name = new Jui('#new-chat-name-input').val();
-				const res = await fetch('/api/v0.1/chats/', {
-					method: 'post',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						name: name
-					})
-				});
-				addChat(await res.json());
+				if (!name) {
+					alert('Chat name cannot be empty!');
+				} else {
+					const res = await fetch('/api/v0.1/chats/', {
+						method: 'post',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							name: name
+						})
+					});
+					addChat(await res.json());
 
-				popup.remove();
-				pageBlocker.addClass('d-none');
+					popup.remove();
+					pageBlocker.addClass('d-none');
+				}
 			});
 		pageBlocker.removeClass('d-none');
 	});
@@ -126,9 +151,10 @@ const contactProfileButton = new Jui('#contact-profile-button')
 	});
 
 
-// Setting up Send button
-const sendButton = new Jui('#send-button')
-	.addEventListener('click', async () => {
+// Setting up Send form
+const newMessageForm = new Jui('#new-message-form')
+	.addEventListener('submit', async (event) => {
+		event.preventDefault();
 		const res = await fetch(`/api/v0.1/chats/${currentChat._id}/messages/`, {
 			method: 'post',
 			headers: {
@@ -137,21 +163,27 @@ const sendButton = new Jui('#send-button')
 			body: JSON.stringify({
 				text: messageInput.val()
 			})
-		})
+		});
+
+		new Jui(`.chat[data-id='${currentChat._id}'] p.chat-last-message`)
+			.text(messageInput.val())
+		new Jui(`.chat[data-id='${currentChat._id}'] span.chat-time`)
+			.text(new Date().toLocaleString())
+		messageInput.val('');
 		addMessage(await res.json());
 	});
 
 
 function addChat(chat) {
 	new Jui(`
-		<div class='chat clickable border-bottom p-3'>
-			<h4 class='chat-name mt-0'>
+		<div class="chat clickable border-bottom user-select-none p-3" data-id="${chat._id}">
+			<h4 class="chat-name mt-0">
 				${chat.name}
 			</h4>
-			<span class='chat-time float-right ml-2'>
-				${chat.messages[0] ? new Date(chat.messages[0].time).toLocaleString() : ''}
+			<span class="chat-time float-right ml-2">
+				${chat.messages[0] ? new Date(chat.messages[0].time).toLocaleString() : ""}
 			</span>
-			<p class='mb-0'>
+			<p class="chat-last-message mb-0">
 				${chat.messages[0] ? chat.messages[0].text : '<i>No messages yet</i>'}
 			</p>
 		</div>
@@ -165,11 +197,11 @@ function addChat(chat) {
 
 function addMessage(message) {
 	new Jui(`
-		<div class='message my-2 px-3'>
-		<p>
+		<div class="message m-3 p-2 ${message.author === currentSession.userID? 'align-self-end' : ''}">
+		<p class="message-text mt-2">
 			${message.text}
 		</p>
-		<span>
+		<span class="message-time text-muted ${message.author === currentSession.userID? 'float-right' : ''}">
 			${new Date(message.time).toLocaleString()}
 		</span>
 		</div>
@@ -187,4 +219,6 @@ addEventListener('load', async () => {
 			addChat(chat);
 		}
 	}
+
+	currentSession = getSession();
 });

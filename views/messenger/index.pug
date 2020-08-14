@@ -1,5 +1,10 @@
 extends ../layout
 
+
+block head
+	link(rel='preload' href='/js/jui.js' as='script')
+
+
 block content
 	div.container-xl#messenger
 		div#chat-panel.d-md-flex.border-left.border-right
@@ -20,8 +25,9 @@ block content
 					button#contact-profile-button.btn-outline-secondary.right Profile
 			div#message-container
 			div.dock.py-2
-				div.form-row.border-top.mx-3
-					input#message-input.mr-3(placeholder='Write a message...')
-					button#send-button.btn-primary Send
+				form#new-message-form.form-row.border-top.mx-3
+					input#message-input.mr-3(placeholder='Write a message...'
+					autocomplete='off')
+					input#send-button.btn.btn-primary(type='submit' value='Send')
 	div#page-blocker.d-none
 	script(async type='module' src='/js/messenger.js')
