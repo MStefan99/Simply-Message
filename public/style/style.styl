@@ -419,7 +419,8 @@ html
 			margin 1em 1em .4em 0
 
 		input, input[type=email], input[type=password],
-		input[type=search], input[type=text], input[type=email], textarea
+		input[type=search], input[type=text], input[type=email],
+		textarea, select
 			display block
 			width 100%
 			padding .7em
@@ -433,6 +434,14 @@ html
 				border 1px solid lighten(color-primary, 40%)
 				box-shadow 0 0 0 3px transparentify(color-primary, color-primary, 40%)
 
+		select[multiple]
+			overflow-y auto
+
+			option
+				display block
+				padding spacer * 0.5 0
+				border-bottom 1px solid darken(color-light, 10%)
+
 		input[type=button], input[type=reset], input[type=submit]
 			width max-content
 			font-weight normal
@@ -445,6 +454,7 @@ html
 		flex-flow column nowrap
 		justify-content space-between
 		min-height 100vh
+		overflow-x hidden
 
 		.clickable
 			cursor pointer
@@ -513,6 +523,7 @@ html
 						flex 1
 
 						div.message
+							cursor default
 							max-width 75%
 							border-radius 10px
 							background-color darken(color-light, 5%)
@@ -538,6 +549,26 @@ html
 			transform translate(-50%, -50%)
 			width max-content
 			max-width 90vw
-			padding 2em clamp(1em, 3vw, 4em)
+			padding 2em 3vw
 			background-color color-light
 			border-radius 10px
+
+		div.menu
+			min-width 120px
+			position absolute
+			border-radius 6px
+			overflow hidden
+			border 1px solid darken(color-light, 20%)
+
+			.menu-element
+				width 100%
+				background color-light
+				padding spacer * 0.5
+				font-weight bold
+				cursor pointer
+
+				&:not(:last-child)
+					border-bottom 1px solid darken(color-light, 20%)
+
+				&:hover
+					background-color darken(color-white, 30)

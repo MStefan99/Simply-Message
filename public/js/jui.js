@@ -1,5 +1,6 @@
 'use strict';
 
+
 function remove(node) {
 	node.parentNode.removeChild(node);
 }
@@ -13,16 +14,18 @@ export default class Jui {
 			throw new Error('No query provided');
 		}
 
-		if (query instanceof Node) {
+		if (query instanceof Node) {  // If query is a node
 			this.nodes = [query];
-		} else if (query instanceof NodeList) {
+		} else if (query instanceof NodeList) {  // If query is a node list
 			this.nodes = Array.from(query);
-		} else if (query.match(/^\s*<.*>\s*$/s)) {
+		} else if (query.match(/^\s*<.*>\s*$/s)) {  // If query is an HTML string
 			this.nodes = Array.from(new DOMParser()
-				.parseFromString(query, 'text/html')
+				.parseFromString(query
+					.replace(/^\s*|\s*$|(>)\s*|\s*(<)/g, '$1$2'),  // Removing whitespaces
+					'text/html')
 				.body
 				.childNodes);
-		} else {
+		} else {  // If query is a selector
 			this.nodes = Array.from(document
 				.querySelectorAll(query));
 		}
@@ -161,17 +164,26 @@ export default class Jui {
 	}
 
 
-	addEventListener(type, handler) {
+	forEach(predicate) {
+		this.nodes.forEach(node => predicate(node));
+	}
+
+
+	addEventListener(events, handler) {
 		this.nodes.forEach(node => {
-			node.addEventListener(type, handler);
+			events.split(' ').forEach(event => {
+				node.addEventListener(event, handler);
+			});
 		});
 		return this;
 	}
 
 
-	removeEventListener(type, handler) {
+	removeEventListener(events, handler) {
 		this.nodes.forEach(node => {
-			node.removeEventListener(type, handler);
+			events.split(' ').forEach(event => {
+				node.removeEventListener(event, handler);
+			});
 		});
 		return this;
 	}

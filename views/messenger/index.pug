@@ -1,10 +1,6 @@
 extends ../layout
 
 
-block head
-	link(rel='preload' href='/js/jui.js' as='script')
-
-
 block content
 	div.container-xl#messenger
 		div#chat-panel.d-md-flex.border-left.border-right
@@ -12,8 +8,7 @@ block content
 				button#settings-button.btn-outline-primary Settings
 				nav
 					button#my-profile-button.btn-outline-secondary.d-none.d-xl-inline My profile
-					button#new-chat-button.btn-outline-secondary New chat
-					button#new-channel-button.btn-outline-secondary.d-none.d-xl-inline New channel
+					button#new-chat-button.btn-outline-secondary New...
 			div#chat-container
 		div#message-panel.d-none.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
