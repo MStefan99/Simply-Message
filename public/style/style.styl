@@ -500,12 +500,12 @@ html
 						flex 1
 
 						div.chat
+							.chat-name, .chat-last-message
+								height 1.2em
+								overflow hidden
+								
 							.chat-time
 								max-width 60%
-
-							.chat-last-message
-								white-space nowrap
-								overflow-x hidden
 
 				div#message-panel
 					display flex
@@ -556,6 +556,7 @@ html
 		div.menu
 			min-width 120px
 			position absolute
+			background color-white
 			border-radius 6px
 			overflow hidden
 			border 1px solid darken(color-light, 20%)

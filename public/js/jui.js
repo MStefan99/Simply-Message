@@ -10,11 +10,11 @@ export default class Jui {
 	constructor(query) {
 		if (!this) {
 			throw new Error('Please call Jui constructor with the new keyword');
-		} else if (query === undefined) {
-			throw new Error('No query provided');
 		}
 
-		if (query instanceof Node) {  // If query is a node
+		if (query === null || query === undefined) {
+			this.nodes = [];
+		} else if (query instanceof Node) {  // If query is a node
 			this.nodes = [query];
 		} else if (query instanceof NodeList) {  // If query is a node list
 			this.nodes = Array.from(query);
@@ -127,6 +127,20 @@ export default class Jui {
 			});
 			return this;
 		}
+	}
+
+
+	closest(selector) {
+		const elements = new Jui();
+
+		this.nodes.forEach(node => {
+			const closest = node.closest(selector);
+
+			if (closest) {
+				elements.nodes.push(closest);
+			}
+		});
+		return elements;
 	}
 
 

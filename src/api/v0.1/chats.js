@@ -32,7 +32,11 @@ router.get('/:chatID', async (req, res) => {  // Get chat by id
 	const db = await openDB('simply_message');
 
 	const chats = db.collection('chats');
-	res.json(await chats.findOne(ObjectId(req.params.chatID)));
+	res.json(await chats.findOne({_id: ObjectId(req.params.chatID)}, {
+		projection: {
+			messages: {$slice: -1}
+		}
+	}));
 });
 
 
@@ -50,6 +54,30 @@ router.post('/', async (req, res) => {  // Create chat
 	await chats.insertOne(chat);
 
 	res.status(201).json(chat);
+});
+
+
+router.patch('/:chatID', async (req, res) => {  // Update chat
+	const db = await openDB('simply_message')
+	const chats = db.collection('chats');
+
+	await chats.findOneAndUpdate(
+		{_id: ObjectId(req.params.chatID)}, {
+			$set: {name: req.body.name}
+		}, {
+			projection: {
+				messages: 0
+			}
+		})
+	res.json(chats);
+});
+
+
+router.delete('/:chatID', async (req, res) => {  // Delete chat
+	const db = await openDB('simply_message');
+
+	db.collection('chats').deleteOne({_id: ObjectId(req.params.chatID)});
+	res.sendStatus(200);
 });
 
 
