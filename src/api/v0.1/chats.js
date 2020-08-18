@@ -61,15 +61,16 @@ router.patch('/:chatID', async (req, res) => {  // Update chat
 	const db = await openDB('simply_message')
 	const chats = db.collection('chats');
 
-	await chats.findOneAndUpdate(
-		{_id: ObjectId(req.params.chatID)}, {
+	await chats.updateOne({_id: ObjectId(req.params.chatID)}, {
 			$set: {name: req.body.name}
-		}, {
-			projection: {
-				messages: 0
-			}
-		})
-	res.json(chats);
+		});
+
+	const chat = await chats.findOne({_id: ObjectId(req.params.chatID)}, {
+		projection: {
+			messages: {$slice: -1}
+		}
+	});
+	res.json(chat);
 });
 
 
