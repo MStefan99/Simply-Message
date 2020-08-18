@@ -459,9 +459,6 @@ html
 		.clickable
 			cursor pointer
 
-			&:hover
-				filter brightness(.9)
-
 		header
 			font-size 1.4em
 			padding .8em
@@ -500,6 +497,9 @@ html
 						flex 1
 
 						div.chat
+							&:hover
+								background darken(color-white, 5%)
+
 							.chat-name, .chat-last-message
 								height 1.2em
 								overflow hidden
@@ -528,6 +528,9 @@ html
 							border-radius 10px
 							background-color darken(color-light, 5%)
 
+							&:hover
+								background darken(color-light, 8%)
+
 				div#chat-panel .header, div#message-panel .header
 					display flex
 					flex-flow row nowrap
@@ -555,6 +558,7 @@ html
 
 		div.menu
 			min-width 120px
+			min-height 20px
 			position absolute
 			background color-white
 			border-radius 6px

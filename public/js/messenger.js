@@ -5,7 +5,6 @@ import Jui from '/js/jui.js';
 
 
 let currentChat;
-let currentSession;
 
 const header = new Jui('header').remove();
 const footer = new Jui('footer').remove();
@@ -76,9 +75,6 @@ function closePopup() {
 function openMessagePanel() {
 	messagePanel.removeClass('d-none');
 	chatPanel.addClass('d-none');
-
-	new Jui('.message').remove();
-	new Jui('#contact-info h4').text('Loading chat...');
 }
 
 
@@ -88,8 +84,11 @@ function closeMessagePanel() {
 }
 
 
-async function downloadMessages() {
-	const res = await fetch(`/api/v0.1/chats/${currentChat._id}/messages/`);
+async function openChat(chat) {
+	new Jui('.message').remove();
+	new Jui('#contact-info h4').text('Loading chat...');
+
+	const res = await fetch(`/api/v0.1/chats/${chat._id}/messages/`);
 
 	if (!res.ok) {
 		alert('Could not download messages');
@@ -98,15 +97,19 @@ async function downloadMessages() {
 			addMessage(message);
 		}
 
-		new Jui('#contact-info h4').text(currentChat.name);
+		new Jui('#contact-info h4').text(chat.name);
 	}
 }
 
 
 function addChat(chat) {
-	new Jui(`
-		<div class="chat clickable border-bottom user-select-none p-3" 
-			data-id="${chat._id}">
+	if (chat.type === 'chat') {
+		const userID = chat.invitees[0] === getSession().userID ?
+			chat.invitees[1] : chat.invitees[0];
+		chat.name = getContacts().find(contact => contact._id === userID).name;
+	}
+	const chatElement = new Jui(`
+		<div class="chat clickable border-bottom user-select-none p-3">
 			<h4 class="chat-name mt-0">
 				${chat.name}
 			</h4>
@@ -118,128 +121,146 @@ function addChat(chat) {
 			</p>
 		</div>
 		`)
+	.prop('data-id', chat._id)
 	.appendTo(chatContainer)
-	.addEventListener('click', chatEvent => currentChat = chat)
 	.addEventListener('click', openMessagePanel)
-	.addEventListener('click', downloadMessages)
-	.addEventListener('contextmenu', chatEvent => {
+	.addEventListener('click', e => {
+		if (!currentChat || currentChat._id !== chat._id) {
+			openChat(chat)
+		}
+	})
+	.addEventListener('click', chatEvent => currentChat = chat)
+	chatElement.addEventListener('contextmenu', chatEvent => {
 		chatEvent.preventDefault();
 		chatEvent.handled = true;
-		createMenu(chatEvent)
-		.append(new Jui('<div class="menu-element">Rename chat</div>')
-			.addEventListener('click', menuEvent => {
-				createPopup()
-				.append(new Jui(`
+		const menu = createMenu(chatEvent)
+		if (chat.creator === getSession().userID) {
+			menu.append(new Jui('<div class="menu-element">Delete chat</div>')
+				.addEventListener('click', async menuEvent => {
+					const res = await fetch('/api/v0.1/chats/' + chat._id + '/', {
+						method: 'delete'
+					});
+
+					if (res.ok) {
+						remove(chatEvent.target.closest('.chat'));
+					}
+				})
+			);
+			if (chat.type !== 'chat') {
+				menu.append(new Jui('<div class="menu-element">Rename chat</div>')
+					.addEventListener('click', menuEvent => {
+						createPopup()
+						.append(new Jui(`
 						<form>
 							<h2>Rename chat</h2>
-							<input id="rename-chat-name" type="text"
+							<label for="rename-chat-name">New chat name</label>
+							<input id="rename-chat-name" type="text" autocomplete="off"
 							 value="${chat.name}" placeholder="New name">
 							<input type="submit" class="btn btn-success" value="Rename">
 						</form>
 					`)
-				.addEventListener('submit', async formEvent => {
-					formEvent.preventDefault();
+						.addEventListener('submit', async formEvent => {
+							formEvent.preventDefault();
 
-					const name = new Jui('#rename-chat-name').val();
-					const res = await fetch('/api/v0.1/chats/' + chat._id, {
-						method: 'PATCH',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							name: name
-						})
-					});
+							const name = new Jui('#rename-chat-name').val();
+							const res = await fetch('/api/v0.1/chats/' + chat._id, {
+								method: 'PATCH',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									name: name
+								})
+							});
 
-					if (!res.ok) {
-						alert('Failed to update chat')
-					} else {
-						closePopup();
-					}
-				}))
-			})
-		)
-		.append(new Jui('<div class="menu-element">Delete chat</div>')
-			.addEventListener('click', async menuEvent => {
-				const res = await fetch('/api/v0.1/chats/' + chat._id + '/', {
-					method: 'delete'
-				});
-
-				if (res.ok) {
-					remove(chatEvent.target.closest('.chat'));
-				}
-			})
-		);
+							if (!res.ok) {
+								alert('Failed to update chat')
+							} else {
+								closePopup();
+							}
+						}))
+					})
+				)
+			}
+		}
 	});
+
 }
 
 
 function addMessage(message) {
 	new Jui(`
-		<div class="message m-3 p-2 ${message.author === currentSession.userID ? 'align-self-end' : ''}">
+		<div class="message m-3 p-2 user-select-none
+			${message.author === getSession().userID ? 'align-self-end' : ''}">
 		<p class="message-text mt-2">
 			${message.text}
 		</p>
-		<span class="message-time text-muted ${message.author === currentSession.userID ? 'float-right' : ''}">
+		<span class="message-time text-muted">
 			${new Date(message.time).toLocaleString()}
 		</span>
-		<span class="message-edited text-muted">${message.edited ? 'Edited' : ''}</span>
+		<span class="message-edited text-muted">${message.edited ? ', edited' : ''}</span>
 		</div>
 	`)
-	.prop('data-message', JSON.stringify(message))
+	.prop('data-id', message._id)
 	.appendTo(messageContainer)
 	.addEventListener('click contextmenu', messageEvent => {
-		messageEvent.handled = true;
-		messageEvent.preventDefault();
-		createMenu(messageEvent)
-		.append(new Jui(`<div class="menu-element">Edit message</div>`)
-			.addEventListener('click', async menuEvent => {
-				createPopup()
-				.append(new Jui(`
+			messageEvent.handled = true;
+			messageEvent.preventDefault();
+			const menu = createMenu(messageEvent)
+
+			if (message.author === getSession().userID) {
+				menu.append(new Jui(`<div class="menu-element">Edit message</div>`)
+					.addEventListener('click', async menuEvent => {
+						createPopup()
+						.append(new Jui(`
 					<form>
 						<h2>Edit message</h2>
-						<label for="edit-message-text"></label>
-						<input id="edit-message-text" type="text"
+						<label for="edit-message-text">New message</label>
+						<input id="edit-message-text" type="text" autocomplete="off"
 						 placeholder="New message" value="${message.text}">
 						<input type="submit" class="btn btn-success" value="Update">
 					</form>
 				`)
-				.addEventListener('submit', async formEvent => {
-					formEvent.preventDefault();
-					const text = new Jui('#edit-message-text').val();
+						.addEventListener('submit', async formEvent => {
+							formEvent.preventDefault();
+							const text = new Jui('#edit-message-text').val();
 
-					const res = await fetch('/api/v0.1/chats/' + currentChat._id
-						+ '/messages/' + message._id + '/', {
-						method: 'PUT',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							text: text
-						})
+							const res = await fetch('/api/v0.1/chats/' + currentChat._id
+								+ '/messages/' + message._id + '/', {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									text: text
+								})
+							})
+
+							if (res.ok) {
+								new Jui(`.message[data-id='${message._id}'] .message-text`)
+								.text(text);
+								new Jui(`.message[data-id='${message._id}'] .message-edited`)
+								.text(', edited')
+							}
+							closePopup();
+						}))
 					})
+				)
+				menu.append(new Jui(`<div class="menu-element">Delete message</div>`)
+					.addEventListener('click', async menuEvent => {
+						const res = await fetch('/api/v0.1/chats/' + currentChat._id
+							+ '/messages/' + message._id + '/', {
+							method: 'delete'
+						})
 
-					if (res.ok) {
-						console.log('Message updated')
-					}
-					closePopup();
-				}))
-			})
-		)
-		.append(new Jui(`<div class="menu-element">Delete message</div>`)
-			.addEventListener('click', async menuEvent => {
-				const res = await fetch('/api/v0.1/chats/' + currentChat._id
-					+ '/messages/' + message._id + '/', {
-					method: 'delete'
-				})
-
-				if (res.ok) {
-					remove(messageEvent.target.closest('.message'));
-				}
-			})
-		)
-		.appendTo(main)
-	});
+						if (res.ok) {
+							remove(messageEvent.target.closest('.message'));
+						}
+					})
+				)
+			}
+		}
+	);
 }
 
 
@@ -397,6 +418,13 @@ const newMessageForm = new Jui('#new-message-form')
 
 addEventListener('load', async e => {
 	{
+		const res = await fetch('/api/v0.1/contacts')
+		if (res.ok) {
+			window.localStorage.setItem('contacts', await res.text());
+		}
+	}
+
+	{
 		const res = await fetch('/api/v0.1/chats/');
 		if (!res.ok) {
 			alert('Failed to download chats');
@@ -404,14 +432,6 @@ addEventListener('load', async e => {
 			for (const chat of await res.json()) {
 				addChat(chat);
 			}
-		}
-	}
-
-	currentSession = getSession();
-	{
-		const res = await fetch('/api/v0.1/contacts')
-		if (res.ok) {
-			window.localStorage.setItem('contacts', await res.text());
 		}
 	}
 });

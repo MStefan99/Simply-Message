@@ -20,9 +20,10 @@ router.get('/', async (req, res) => {  // Get all chats
 	res.json(await chats.find({}, {
 		projection: {
 			messages: {$slice: -1},  // TODO: rename to lastMessage
-			invitees: 0,
-			desc: 0,
-			creatorID: 0
+			invitees: {$slice: -2},
+			name: 1,
+			type: 1,
+			creator: 1
 		}
 	}).toArray());
 });
@@ -82,6 +83,7 @@ router.post('/', async (req, res) => {  // Create chat
 			res.status(400).send('WRONG_TYPE');
 			return;
 	}
+	chat.creator = req.user._id;
 	chat._id = ObjectId();
 	chat.messages = [];
 	chat.type = req.body.type;
@@ -97,9 +99,17 @@ router.patch('/:chatID', async (req, res) => {  // Update chat
 	const db = await openDB('simply_message')
 	const chats = db.collection('chats');
 
-	await chats.updateOne({_id: ObjectId(req.params.chatID)}, {
-			$set: {name: req.body.name}
-		});
+	const r = await chats.updateOne({
+		_id: ObjectId(req.params.chatID),
+		type: {$ne: 'chat'}
+	}, {
+		$set: {name: req.body.name}
+	});
+
+	if (!r.result.n) {
+		res.status(400).send('CANT_BE_MODIFIED');
+		return;
+	}
 
 	const chat = await chats.findOne({_id: ObjectId(req.params.chatID)}, {
 		projection: {

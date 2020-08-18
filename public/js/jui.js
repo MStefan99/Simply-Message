@@ -21,7 +21,8 @@ export default class Jui {
 		} else if (query.match(/^\s*<.*>\s*$/s)) {  // If query is an HTML string
 			this.nodes = Array.from(new DOMParser()
 				.parseFromString(query
-					.replace(/^\s*|\s*$|(>)\s*|\s*(<)/g, '$1$2'),  // Removing whitespaces
+					.replace(/^\s*|\s*$|(>)\s*|\s*(<)/g, '$1$2')  // Removing whitespaces
+					.replace(/[\t\n\r]+/g, ' '),
 					'text/html')
 				.body
 				.childNodes);

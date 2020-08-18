@@ -15,19 +15,4 @@ router.get('/', (req, res) => {
 });
 
 
-router.post('/chats', async (req, res) => {
-	const db = await openDB('simply_message');
-
-	const chats = db.collection('chats');
-	await chats.insertOne({
-		name: req.body.name || null,
-		desc: req.body.desc || null,
-		creatorID: req.user._id,
-		invitees: []
-	});
-
-	res.sendStatus(200);
-});
-
-
 module.exports = router;
