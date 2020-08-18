@@ -40,6 +40,11 @@ function getSession() {
 }
 
 
+function getContacts() {
+	return JSON.parse(window.localStorage.getItem('contacts'));
+}
+
+
 function remove(node) {
 	node.parentNode.removeChild(node);
 }
@@ -123,8 +128,8 @@ function addChat(chat) {
 		createMenu(chatEvent)
 		.append(new Jui('<div class="menu-element">Rename chat</div>')
 			.addEventListener('click', menuEvent => {
-				createPopup().append(
-					new Jui(`
+				createPopup()
+				.append(new Jui(`
 						<form>
 							<h2>Rename chat</h2>
 							<input id="rename-chat-name" type="text"
@@ -132,26 +137,26 @@ function addChat(chat) {
 							<input type="submit" class="btn btn-success" value="Rename">
 						</form>
 					`)
-					.addEventListener('submit', async formEvent => {
-						formEvent.preventDefault();
+				.addEventListener('submit', async formEvent => {
+					formEvent.preventDefault();
 
-						const name = new Jui('#rename-chat-name').val();
-						const res = await fetch('/api/v0.1/chats/' + chat._id, {
-							method: 'PATCH',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								name: name
-							})
-						});
+					const name = new Jui('#rename-chat-name').val();
+					const res = await fetch('/api/v0.1/chats/' + chat._id, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							name: name
+						})
+					});
 
-						if (!res.ok) {
-							alert('Failed to update chat')
-						} else {
-							closePopup();
-						}
-					}))
+					if (!res.ok) {
+						alert('Failed to update chat')
+					} else {
+						closePopup();
+					}
+				}))
 			})
 		)
 		.append(new Jui('<div class="menu-element">Delete chat</div>')
@@ -178,7 +183,7 @@ function addMessage(message) {
 		<span class="message-time text-muted ${message.author === currentSession.userID ? 'float-right' : ''}">
 			${new Date(message.time).toLocaleString()}
 		</span>
-		<span class="message-edited text-muted">${message.edited? 'Edited' : ''}</span>
+		<span class="message-edited text-muted">${message.edited ? 'Edited' : ''}</span>
 		</div>
 	`)
 	.prop('data-message', JSON.stringify(message))
@@ -265,7 +270,42 @@ const newButton = new Jui('#new-button')
 .addEventListener('click', newButtonEvent => {
 	newButtonEvent.handled = true;
 	createMenu(newButtonEvent)
-	.append(new Jui('<div class="menu-element">New chat</div>'))
+	.append(new Jui('<div class="menu-element">New chat</div>')
+	.addEventListener('click', async menuEvent => {
+		createPopup()
+		.append(new Jui(`
+			<form>
+				<h2>New chat</h2>
+				<label for="new-chat-contact">Select contact</label>
+				<select id="new-chat-contact"></select>
+				<input type="submit" class="btn btn-success" value="Create">
+			</form>
+		`).addEventListener('submit', async formEvent => {
+			formEvent.preventDefault();
+			const contactID = document.querySelector('#new-chat-contact')
+				.selectedOptions[0].value
+
+			const res = await fetch('/api/v0.1/chats/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					type: 'chat',
+					contact: contactID
+				})
+			})
+
+			closePopup();
+		}))
+		const contactSelect = new Jui('#new-chat-contact')
+		for (const contact of getContacts()) {
+			contactSelect.append(new Jui(`
+				<option value="${contact._id}">
+					${contact.name}
+				</option>`))
+		}
+	}))
 	.append(new Jui('<div class="menu-element">New group</div>')
 		.addEventListener('click', menuEvent => {
 			const popup = createPopup()
@@ -273,18 +313,18 @@ const newButton = new Jui('#new-button')
 				<form id="new-chat-form">
 					<h2>Create new chat</h2>
 					<label for="new-chat-name-input">New chat name</label>
-					<input type="text" id="new-chat-name-input" name="name" autocomplete="off">
-					<label for="new-chat-contact-select">Select contacts</label>
-					<select name="contact" id="new-chat-contact-select" multiple></select>
+					<input type="text" id="new-group-name" name="name" autocomplete="off">
+					<label for="new-group-contacts">Select contacts</label>
+					<select name="contact" id="new-group-contacts" multiple></select>
 					<input type="submit" class="btn btn-success" value="Create">
 				</form>
 			`))
 
 			.addEventListener('submit', async (event) => {
 				event.preventDefault();
-				const name = new Jui('#new-chat-name-input').val();
+				const name = new Jui('#new-group-name').val();
 				const contacts = [];
-				const options = document.querySelector('#new-chat-contact-select')
+				const options = document.querySelector('#new-group-contacts')
 					.selectedOptions
 				for (let i = 0; i < options.length; ++i) {
 					contacts.push(options[i].value)
@@ -299,6 +339,7 @@ const newButton = new Jui('#new-button')
 						},
 						body: JSON.stringify({
 							name: name,
+							type: 'group',
 							contacts: contacts
 						})
 					});
@@ -307,9 +348,9 @@ const newButton = new Jui('#new-button')
 					closePopup();
 				}
 			});
-			for (const contact of ['contact1', 'contact2', 'contact3', 'contact4', 'contact5']) {
-				new Jui(`<option value="${contact}">${contact}</option>`)
-				.appendTo('#new-chat-contact-select');
+			for (const contact of getContacts()) {
+				new Jui(`<option value="${contact._id}">${contact.name}</option>`)
+				.appendTo('#new-group-contacts');
 			}
 		})
 	)
@@ -355,14 +396,22 @@ const newMessageForm = new Jui('#new-message-form')
 
 
 addEventListener('load', async e => {
-	const res = await fetch('/api/v0.1/chats/');
-	if (!res.ok) {
-		alert('Failed to download chats');
-	} else {
-		for (const chat of await res.json()) {
-			addChat(chat);
+	{
+		const res = await fetch('/api/v0.1/chats/');
+		if (!res.ok) {
+			alert('Failed to download chats');
+		} else {
+			for (const chat of await res.json()) {
+				addChat(chat);
+			}
 		}
 	}
 
 	currentSession = getSession();
+	{
+		const res = await fetch('/api/v0.1/contacts')
+		if (res.ok) {
+			window.localStorage.setItem('contacts', await res.text());
+		}
+	}
 });

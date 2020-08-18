@@ -42,15 +42,51 @@ router.get('/:chatID', async (req, res) => {  // Get chat by id
 
 router.post('/', async (req, res) => {  // Create chat
 	const db = await openDB('simply_message');
+	let chat = {};
+
+	switch (req.body.type) {
+		case 'chat':
+			if (!req.body.contact) {
+				res.status(400).send('NO_CONTACT');
+				return;
+			}
+			chat = {
+				name: null,
+				desc: null,
+				invitees: [ObjectId(req.body.contact)]
+			}
+			chat.invitees.push(req.user._id);
+			break;
+		case 'group':
+			if (!req.body.contacts) {
+				res.status(400).send('NO_CONTACTS');
+			}
+			chat = {
+				name: req.body.name,
+				desc: req.body.desc,
+				invitees: []
+			}
+			for (const contact of req.body.contacts) {
+				chat.invitees.push(ObjectId(contact));
+			}
+			chat.invitees.push(req.user._id);
+			break;
+		case 'channel':
+			chat = {
+				name: req.body.name,
+				desc: req.body.desc,
+				invitees: [req.user._id]
+			}
+			break;
+		default:
+			res.status(400).send('WRONG_TYPE');
+			return;
+	}
+	chat._id = ObjectId();
+	chat.messages = [];
+	chat.type = req.body.type;
 
 	const chats = db.collection('chats');
-	const chat = {
-		name: req.body.name || null,
-		desc: req.body.desc || null,
-		creatorID: req.user._id,
-		invitees: [],
-		messages: []
-	}
 	await chats.insertOne(chat);
 
 	res.status(201).json(chat);
