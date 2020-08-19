@@ -2,10 +2,9 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const ObjectId = require('mongodb').ObjectId;
 
-const openDB = require('../../lib/db');
 const middleware = require('../../lib/middleware');
+const libChat = require('../../lib/chat');
 
 const router = express.Router();
 
@@ -14,117 +13,57 @@ router.use(middleware.redirectIfNotAuthorized());
 
 
 router.get('/', async (req, res) => {  // Get all chats
-	const db = await openDB('simply_message');
-
-	const chats = db.collection('chats');
-	res.json(await chats.find({}, {
-		projection: {
-			messages: {$slice: -1},  // TODO: rename to lastMessage
-			invitees: {$slice: -2},
-			name: 1,
-			type: 1,
-			creator: 1
-		}
-	}).toArray());
+	res.json(await libChat.getChats());
 });
 
 
 router.get('/:chatID', async (req, res) => {  // Get chat by id
-	const db = await openDB('simply_message');
-
-	const chats = db.collection('chats');
-	res.json(await chats.findOne({_id: ObjectId(req.params.chatID)}, {
-		projection: {
-			messages: {$slice: -1}
-		}
-	}));
+	res.json(await libChat.getChatByID(req.params.chatID));
 });
 
 
 router.post('/', async (req, res) => {  // Create chat
-	const db = await openDB('simply_message');
-	let chat = {};
+	try {
+		const chat = await libChat.createChat(req.body, req.user);
 
-	switch (req.body.type) {
-		case 'chat':
-			if (!req.body.contact) {
-				res.status(400).send('NO_CONTACT');
-				return;
-			}
-			chat = {
-				name: null,
-				desc: null,
-				invitees: [ObjectId(req.body.contact)]
-			}
-			chat.invitees.push(req.user._id);
-			break;
-		case 'group':
-			if (!req.body.contacts) {
-				res.status(400).send('NO_CONTACTS');
-			}
-			chat = {
-				name: req.body.name,
-				desc: req.body.desc,
-				invitees: []
-			}
-			for (const contact of req.body.contacts) {
-				chat.invitees.push(ObjectId(contact));
-			}
-			chat.invitees.push(req.user._id);
-			break;
-		case 'channel':
-			chat = {
-				name: req.body.name,
-				desc: req.body.desc,
-				invitees: [req.user._id]
-			}
-			break;
-		default:
-			res.status(400).send('WRONG_TYPE');
-			return;
+		res.status(201).json(chat);
+	} catch (e) {
+		res.status(400).send(e.message);
 	}
-	chat.creator = req.user._id;
-	chat._id = ObjectId();
-	chat.messages = [];
-	chat.type = req.body.type;
-
-	const chats = db.collection('chats');
-	await chats.insertOne(chat);
-
-	res.status(201).json(chat);
 });
 
 
-router.patch('/:chatID', async (req, res) => {  // Update chat
-	const db = await openDB('simply_message')
-	const chats = db.collection('chats');
+router.patch('/:chatID', async (req, res) => {  // Rename chat
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
 
-	const r = await chats.updateOne({
-		_id: ObjectId(req.params.chatID),
-		type: {$ne: 'chat'}
-	}, {
-		$set: {name: req.body.name}
-	});
+		if (!chat.creator.equals(req.user._id)) {
+			res.status(403).send('NOT_ALLOWED');
+		} else {
+			await chat.rename(req.body.name);
 
-	if (!r.result.n) {
-		res.status(400).send('CANT_BE_MODIFIED');
-		return;
-	}
-
-	const chat = await chats.findOne({_id: ObjectId(req.params.chatID)}, {
-		projection: {
-			messages: {$slice: -1}
+			res.status(200).json(chat);
 		}
-	});
-	res.json(chat);
+	} catch (e) {
+		res.status(400).send(e.message);
+	}
 });
 
 
 router.delete('/:chatID', async (req, res) => {  // Delete chat
-	const db = await openDB('simply_message');
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
 
-	db.collection('chats').deleteOne({_id: ObjectId(req.params.chatID)});
-	res.sendStatus(200);
+		if (!chat.creator.equals(req.user._id)) {
+			res.status(403).send('NOT_ALLOWED');
+		} else {
+			await chat.remove();
+
+			res.sendStatus(200);
+		}
+	} catch (e) {
+		res.status(400).send(e.message);
+	}
 });
 
 

@@ -2,7 +2,6 @@
 
 const express = require('express');
 
-const openDB = require('../lib/db');
 const middleware = require('../lib/middleware');
 
 const router = express.Router();

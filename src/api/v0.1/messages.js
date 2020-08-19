@@ -2,10 +2,10 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const ObjectId = require('mongodb').ObjectID;
 
-const openDB = require('../../lib/db');
 const middleware = require('../../lib/middleware');
+const libChat = require('../../lib/chat');
+const libMessage = require('../../lib/message');
 
 const router = express.Router({mergeParams: true});
 
@@ -14,68 +14,65 @@ router.use(middleware.redirectIfNotAuthorized());
 
 
 router.get('/', async (req, res) => {  // Get all messages
-	const db = await openDB('simply_message');
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
+		const messages = await libMessage.getChatMessages(chat);
 
-	const chats = db.collection('chats');
-	res.json((await chats.findOne(ObjectId(req.params.chatID), {
-		projection: {
-			messages: 1
-		}
-	})).messages);
+		res.json(messages);
+	} catch (e) {
+		res.status(400).send(e.message);
+	}
 });
 
 
 router.post('/', async (req, res) => {  // Create message
-	const db = await openDB('simply_message');
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
+		const message = await libMessage
+		.createMessage(chat, req.body, req.user);
 
-	const chats = db.collection('chats');
-	const message = {
-		_id: ObjectId(),
-		author: req.user._id,
-		text: req.body.text,
-		time: Date.now(),
-		edited: false
+		res.json(message);
+	} catch (e) {
+		res.status(400).send(e.message);
 	}
-	await chats.updateOne({_id: ObjectId(req.params.chatID)}, {
-		$push: {messages: message}
-	});
-
-	res.status(201).json(message);
 });
 
 
 router.put('/:messageID', async (req, res) => {  // Update message
-	const db = await openDB('simply_message');
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
+		const message = await libMessage
+		.getMessageByID(chat, req.params.messageID);
 
-	const chats = db.collection('chats')
-	const query = {
-		_id: ObjectId(req.params.chatID),
-		'messages._id': ObjectId(req.params.messageID)
-	};
-	await chats.findOneAndUpdate(
-		query,
-		{
-			$set: {
-				'messages.$.text': req.body.text,
-				'messages.$.edited': true
-			}
+		if (!message.author.equals(req.user._id)) {
+			res.status(403).send('NOT_ALLOWED');
+		} else {
+			await message.setText(req.body.text);
+
+			res.json(message);
 		}
-	);
-
-	const message = (await chats.findOne(query, {
-		projection: {'messages.$': 1},
-	})).messages[0];
-	res.json(message);
+	} catch (e) {
+		res.status(400).send(e.message);
+	}
 });
 
 
 router.delete('/:messageID', async (req, res) => {  // Delete message
-	const db = await openDB('simply_message')
+	try {
+		const chat = await libChat.getChatByID(req.params.chatID);
+		const message = await libMessage
+		.getMessageByID(chat, req.params.messageID);
 
-	db.collection('chats').updateOne({_id: ObjectId(req.params.chatID)}, {
-		$pull: {messages: {_id: ObjectId(req.params.messageID)}}
-	});
-	res.sendStatus(200);
+		if (!message.author.equals(req.user._id)) {
+			res.status(403).send('NOT_ALLOWED');
+		} else {
+			await message.remove();
+
+			res.sendStatus(200);
+		}
+	} catch (e) {
+		res.status(400).send(e.messages);
+	}
 });
 
 

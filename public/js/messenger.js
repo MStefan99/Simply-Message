@@ -135,17 +135,6 @@ function addChat(chat) {
 		chatEvent.handled = true;
 		const menu = createMenu(chatEvent)
 		if (chat.creator === getSession().userID) {
-			menu.append(new Jui('<div class="menu-element">Delete chat</div>')
-				.addEventListener('click', async menuEvent => {
-					const res = await fetch('/api/v0.1/chats/' + chat._id + '/', {
-						method: 'delete'
-					});
-
-					if (res.ok) {
-						remove(chatEvent.target.closest('.chat'));
-					}
-				})
-			);
 			if (chat.type !== 'chat') {
 				menu.append(new Jui('<div class="menu-element">Rename chat</div>')
 					.addEventListener('click', menuEvent => {
@@ -172,19 +161,29 @@ function addChat(chat) {
 									name: name
 								})
 							});
+							closePopup();
 
-							if (!res.ok) {
-								alert('Failed to update chat')
-							} else {
-								closePopup();
+							if (res.ok) {
+								new Jui(`.chat[data-id='${chat._id}'] .chat-name`)
+								.text(name)
 							}
 						}))
 					})
 				)
 			}
+			menu.append(new Jui('<div class="menu-element">Delete chat</div>')
+				.addEventListener('click', async menuEvent => {
+					const res = await fetch('/api/v0.1/chats/' + chat._id + '/', {
+						method: 'delete'
+					});
+
+					if (res.ok) {
+						remove(chatEvent.target.closest('.chat'));
+					}
+				})
+			);
 		}
 	});
-
 }
 
 
@@ -220,7 +219,7 @@ function addMessage(message) {
 						 placeholder="New message" value="${message.text}">
 						<input type="submit" class="btn btn-success" value="Update">
 					</form>
-				`)
+					`)
 						.addEventListener('submit', async formEvent => {
 							formEvent.preventDefault();
 							const text = new Jui('#edit-message-text').val();
@@ -316,6 +315,7 @@ const newButton = new Jui('#new-button')
 					contact: contactID
 				})
 			})
+			addChat(await res.json());
 
 			closePopup();
 		}))

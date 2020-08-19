@@ -1,8 +1,10 @@
 'use strict';
 
+const ObjectId = require('mongodb').ObjectId;
+
 const sign = require('./sign');
 const openDB = require('./db');
-const ObjectId = require('mongodb').ObjectId;
+const libUser = require('../lib/user');
 const {sessionCookie} = require('./cookie');
 
 
@@ -24,13 +26,8 @@ function getSession(req, res, next) {
 
 async function getUser(req, res, next) {
 	if (req.session) {
-		const db = await openDB('simply_message');
-		const users = await db.collection('users');
-
-		const user = await users.findOne(ObjectId(req.session.userID));
-		if (user) {
-			res.locals.user = req.user = user;
-		}
+		res.locals.user = req.user = await libUser
+		.getUserByID(req.session.userID);
 	}
 	next();
 }
@@ -45,7 +42,7 @@ function redirectIfNotAuthorized(req, res, next) {
 
 		if (!valid) {
 			res.redirect(303, '/');
-		// } else if (something wrong) {  // TODO: check if session is ok
+			// } else if (something wrong) {  // TODO: check if session is ok
 		} else {
 			next();
 		}

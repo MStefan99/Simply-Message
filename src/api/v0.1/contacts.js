@@ -2,10 +2,10 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const ObjectId = require('mongodb').ObjectId;
 
-const openDB = require('../../lib/db');
 const middleware = require('../../lib/middleware');
+
+const libUser = require('../../lib/user');
 
 const router = express.Router();
 
@@ -14,48 +14,24 @@ router.use(middleware.redirectIfNotAuthorized());
 
 
 router.get('/', async (req, res) => {  // Get all contacts
-	const db = await openDB('simply_message');
-
-	const users = db.collection('users');
-	res.json(await users.aggregate([
-		{$match: {_id: req.user._id}},
-		{
-			$lookup: {
-				from: 'users',
-				localField: 'contacts',
-				foreignField: '_id',
-				as: 'contacts'
-			}
-		},
-		{$project: {
-			'contacts.passwordHash': 0,
-			'contacts.contacts': 0,
-		}},
-		{$unwind: '$contacts'},
-		{$replaceRoot: {newRoot: '$contacts'}},
-	]).toArray());
+	res.json(await req.user.getContacts());
 });
 
 
 router.post('/', async (req, res) => {  // Add contact
-	const db = await openDB('simply_message');
+	const contact = await libUser.getUserByID(req.body.id);
 
-	const users = db.collection('users');
-	users.updateOne({_id: req.user._id}, {
-		$push: {contacts: ObjectId(req.body.id)}
-	});
+	await req.user.addContact(contact);
 
-	res.status(201).json({_id: req.body.id});
+	delete contact.passwordHash;
+	res.status(201).json(contact);
 });
 
 
 router.delete('/:contactID', async (req, res) => {  // Delete contact
-	const db = await openDB('simply_message');
+	const contact = await libUser.getUserByID(req.params.contactID);
 
-	const users = db.collection('users');
-	users.updateOne({_id: req.user._id}, {
-		$pull: {contacts: ObjectId(req.params.contactID)}
-	});
+	await req.user.removeContact(contact);
 	res.sendStatus(200);
 });
 

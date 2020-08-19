@@ -1,13 +1,12 @@
 'use strict';
 
 const express = require('express');
-const crypto = require('crypto');
 
 const sign = require('../lib/sign');
 const openDB = require('../lib/db');
 const {sessionCookie} = require('../lib/cookie');
-
-const secret = 'Simply Message very secret key!';
+const flash = require('../lib/flash');
+const libUser = require('../lib/user');
 
 
 (async function init() {
@@ -23,6 +22,7 @@ const secret = 'Simply Message very secret key!';
 
 
 const router = express.Router();
+router.use(flash());
 
 
 router.get('/register', (req, res) => {
@@ -31,16 +31,15 @@ router.get('/register', (req, res) => {
 
 
 router.post('/register', async (req, res) => {
-	const db = await openDB('simply_message');
-	const users = db.collection('users');
-	const hmac = crypto.createHmac('sha256', secret);
-
-	await users.insertOne({
+	const user = await libUser.createUser({
 		username: req.body.username,
 		email: req.body.email,
-		passwordHash: hmac.update(req.body.password).digest('hex')
+		name: req.body.email,
+		password: req.body.password
 	});
-	res.send('Success!');
+
+	res.flash({title: 'Registration successful!'})
+	.redirect(303,'/');
 });
 
 
@@ -50,16 +49,9 @@ router.get('/login', (req, res) => {
 
 
 router.post('/login', async (req, res) => {
-	const db = await openDB('simply_message');
-	const users = db.collection('users');
-	const user = await users.findOne({username: req.body.username});
-	const hmac = crypto.createHmac('sha256', secret);
+	const user = await libUser.getUserByUsername(req.body.username);
 
-	if (!user) {
-		res.send('Not found');
-	} else if (user.passwordHash !== hmac
-		.update(req.body.password)
-		.digest('hex')) {
+	if (!user.verifyPassword(req.body.password)) {
 		res.send('Wrong password');
 	} else {
 		const session = {
@@ -77,7 +69,8 @@ router.post('/login', async (req, res) => {
 
 
 router.get('/logout', (req, res) => {
-	res.clearCookie(sessionCookie.cookieName, sessionCookie.options)
+	res.clearCookie(sessionCookie.cookieName,
+		sessionCookie.options)
 	res.redirect(303, '/');
 });
 
