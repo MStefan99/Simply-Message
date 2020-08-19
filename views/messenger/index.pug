@@ -3,6 +3,17 @@ extends ../layout
 
 block content
 	div.container-xl#messenger
+		div#settings-panel.d-none.border-left.border-right
+			div.header.bg-light.p-2.border-bottom
+				h2 Settings
+				button#settings-back-button.btn-outline-secondary Close
+			div#settings-container
+				h3 General
+				div.section
+					p Something very important
+				h3 Others
+				div.section
+					p Something not as important
 		div#chat-panel.d-md-flex.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
 				button#settings-button.btn-outline-primary Settings
@@ -10,19 +21,33 @@ block content
 					button#my-profile-button.btn-outline-secondary.d-none.d-xl-inline My profile
 					button#new-button.btn-outline-secondary New...
 			div#chat-container
-		div#message-panel.d-none.border-left.border-right
+		div#message-panel.d-none.d-md-flex.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
-				button#back-button.btn-outline-secondary.d-inline.d-md-none Back
+				button#message-back-button.btn-outline-secondary.d-inline.d-md-none Back
 				div#contact-info.ml-1
-					h4.m-2 Contact name
-					p.m-2 Last seen
+					h4#chat-name.m-2 Contact name
+					p#last-seen.m-2 Last seen
 				nav
-					button#contact-profile-button.btn-outline-secondary.right Profile
+					button#details-button.btn-outline-secondary.right Details
 			div#message-container
 			div.dock.py-2
 				form#new-message-form.form-row.border-top.mx-3
 					input#message-input.mr-3(placeholder='Write a message...'
-					autocomplete='off')
+						autocomplete='off')
 					input#send-button.btn.btn-primary(type='submit' value='Send')
+		div#details-panel.d-none.border-left.border-right
+			div.header.bg-light.p-2.border-bottom
+				h2 Details
+				button#details-back-button.btn-outline-secondary Close
+			div#details-container
+				h3 General
+				div.section
+					h4 Chat name
+					p#details-name
+					h4 Description
+					p#details-description
+				h3 Others
+				div.section
+					p Something not as important
 	div#page-blocker.d-none
 	script(async type='module' src='/js/messenger.js')

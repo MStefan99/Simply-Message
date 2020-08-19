@@ -6,7 +6,6 @@ const ObjectID = require('mongodb').ObjectID;
 
 class Message {
 	_id = ObjectID();
-	_chat;
 	author;
 	text;
 	time = Date.now();
@@ -19,7 +18,6 @@ class Message {
 
 		messageObject.author = user._id;
 		messageObject.text = options.text;
-		messageObject._chat = chat._id;
 
 		const chats = db.collection('chats')
 		await chats.updateOne({_id: chat._id}, {
@@ -45,7 +43,6 @@ class Message {
 			const messageObject = new Message();
 
 			Object.assign(messageObject, messageData);
-			messageObject._chat = chat._id;
 			messageObjects.push(messageObject);
 		}
 		return messageObjects;
@@ -81,8 +78,7 @@ class Message {
 		const db = await openDB('simply_message');
 
 		const chats = db.collection('chats')
-		await chats.findOneAndUpdate({
-			_id: this._chat,
+		await chats.findOneAndUpdate({  // TODO: filter by chat
 				'messages._id': this._id
 			},
 			{
@@ -101,7 +97,7 @@ class Message {
 		const db = await openDB('simply_message')
 
 		const chats = db.collection('chats');
-		await chats.updateOne({_id: this._chat}, {
+		await chats.updateMany({}, {  // TODO: filter by chat
 			$pull: {messages: {_id: this._id}}
 		});
 	}

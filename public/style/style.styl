@@ -484,12 +484,37 @@ html
 				height 100vh
 				width 100vw
 
-				div#chat-panel
+				& > div
 					display flex
 					flex-flow column nowrap
 					justify-content space-between
 					height inherit
-					flex 1 0 40%
+
+				& > div .header
+					display flex
+					flex-flow row nowrap
+					justify-content space-between
+					align-items center
+
+				div#settings-panel
+					position relative
+					flex 1 1 20%
+
+					h3
+						background color-white
+						position sticky
+						padding spacer
+						top 0
+
+					div.section
+						padding 0 spacer * 1.5
+
+					div#settings-container
+						height inherit
+						overflow-y auto
+
+				div#chat-panel
+					flex 1 1 40%
 
 					div#chat-container
 						height inherit
@@ -500,19 +525,21 @@ html
 							&:hover
 								background darken(color-white, 5%)
 
-							.chat-name, .chat-last-message
-								height 1.2em
-								overflow hidden
-								
-							.chat-time
-								max-width 60%
+							.chat-line
+								display flex
+								flex-flow row nowrap
+								justify-content space-between
+
+								.chat-name, .chat-last-message
+									display inline-block
+									height 1.2em
+									overflow hidden
+
+								.chat-time
+									max-width 60%
 
 				div#message-panel
-					display flex
-					flex-flow column nowrap
-					justify-content space-between
-					max-height inherit
-					flex 1 0 60%
+					flex 1 1 60%
 
 					div#message-container
 						display flex
@@ -531,11 +558,22 @@ html
 							&:hover
 								background darken(color-light, 8%)
 
-				div#chat-panel .header, div#message-panel .header
-					display flex
-					flex-flow row nowrap
-					justify-content space-between
-					align-items center
+				div#details-panel
+					position relative
+					flex 1 1 20%
+
+					h3
+						background color-white
+						position sticky
+						padding spacer
+						top 0
+
+					div.section
+						padding 0 spacer * 1.5
+
+					div#details-container
+						height inherit
+						overflow-y auto
 
 		div#page-blocker
 			position fixed

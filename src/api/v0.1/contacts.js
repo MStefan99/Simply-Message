@@ -24,6 +24,7 @@ router.post('/', async (req, res) => {  // Add contact
 	await req.user.addContact(contact);
 
 	delete contact.passwordHash;
+	delete contact.contacts;
 	res.status(201).json(contact);
 });
 

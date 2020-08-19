@@ -125,8 +125,6 @@ class User {
 		users.updateOne({_id: this._id}, {
 			$pull: {contacts: user._id}
 		});
-
-		throw new Error('NOT_IMPLEMENTED');
 	}
 
 

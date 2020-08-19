@@ -12,10 +12,10 @@ html(lang='en')
 	body
 		header.border-bottom
 			a(href='/') Home
-				if (!session)
-					a.right(href='/login/') Sign in
-				else
-					a.right(href='/logout/') Sign out
+			if (!session)
+				a.right(href='/login/') Sign in
+			else
+				a.right(href='/logout/') Sign out
 			block header
 
 		main

@@ -14,8 +14,10 @@ const main = new Jui('main')
 		new Jui('.menu').remove();
 	}
 });
+const settingsPanel = new Jui('#settings-panel');
 const chatPanel = new Jui('#chat-panel');
 const messagePanel = new Jui('#message-panel');
+const detailsPanel = new Jui('#details-panel');
 const chatContainer = new Jui('#chat-container');
 const messageContainer = new Jui('#message-container');
 const messageInput = new Jui('#message-input');
@@ -72,15 +74,49 @@ function closePopup() {
 }
 
 
-function openMessagePanel() {
-	messagePanel.removeClass('d-none');
+function openPanel(panel) {
+	switch (panel) {
+		case 'message':
+			messagePanel.removeClass('d-none');
+			settingsPanel.addClass('d-none');
+			detailsPanel.addClass('d-none');
+			break;
+		case 'settings':
+			settingsPanel.removeClass('d-none');
+			detailsPanel.addClass('d-none');
+			break;
+		case 'details':
+			detailsPanel.removeClass('d-none');
+			messagePanel.addClass('d-none');
+			settingsPanel.addClass('d-none');
+			break;
+		default:
+			throw new Error('No such panel');
+			break;
+	}
 	chatPanel.addClass('d-none');
 }
 
 
-function closeMessagePanel() {
-	messagePanel.addClass('d-none');
-	chatPanel.removeClass('d-none');
+function closePanel(panel) {
+	switch (panel) {
+		case 'message':
+			messagePanel.addClass('d-none');
+			detailsPanel.addClass('d-none')
+			chatPanel.removeClass('d-none');
+			break;
+		case 'settings':
+			settingsPanel.addClass('d-none');
+			chatPanel.removeClass('d-none');
+			break;
+		case 'details':
+			detailsPanel.addClass('d-none');
+			messagePanel.removeClass('d-none');
+			break;
+		default:
+			throw new Error('No such panel');
+			break;
+	}
 }
 
 
@@ -97,7 +133,13 @@ async function openChat(chat) {
 			addMessage(message);
 		}
 
-		new Jui('#contact-info h4').text(chat.name);
+		new Jui('#chat-name').text(chat.name);
+		const lastSeen = new Jui('#last-seen');
+		if (chat.type !== 'chat') {
+			lastSeen.text('');
+		} else {
+			lastSeen.text('Last seen at');
+		}
 	}
 }
 
@@ -110,20 +152,27 @@ function addChat(chat) {
 	}
 	const chatElement = new Jui(`
 		<div class="chat clickable border-bottom user-select-none p-3">
-			<h4 class="chat-name mt-0">
-				${chat.name}
-			</h4>
-			<span class="chat-time float-right ml-2">
-				${chat.messages[0] ? new Date(chat.messages[0].time).toLocaleString() : ""}
-			</span>
-			<p class="chat-last-message mb-0">
-				${chat.messages[0] ? chat.messages[0].text : '<i>No messages yet</i>'}
-			</p>
+			<div class="chat-line chat-line-1 mb-3">
+				<h4 class="chat-name my-0">
+					${chat.name}
+				</h4>
+				<span class="chat-type text-muted">
+					${chat.type}
+				</span>
+			</div>
+			<div class="chat-line chat-line-2">
+				<p class="chat-last-message m-0">
+					${chat.messages[0] ? chat.messages[0].text : '<i>No messages yet</i>'}
+				</p>
+				<span class="chat-time ml-2">
+					${chat.messages[0] ? new Date(chat.messages[0].time).toLocaleString() : ""}
+				</span>
+			</div>
 		</div>
 		`)
 	.prop('data-id', chat._id)
 	.appendTo(chatContainer)
-	.addEventListener('click', openMessagePanel)
+	.addEventListener('click', () => openPanel('message'))
 	.addEventListener('click', e => {
 		if (!currentChat || currentChat._id !== chat._id) {
 			openChat(chat)
@@ -274,7 +323,7 @@ const pageBlocker = new Jui('#page-blocker')
 // Setting up Settings button
 const settingsButton = new Jui('#settings-button')
 .addEventListener('click', buttonEvent => {
-	alert('Settings');
+	openPanel('settings');
 });
 
 
@@ -379,17 +428,25 @@ const newButton = new Jui('#new-button')
 });
 
 
-// Setting up Back button
-const backButton = new Jui('#back-button')
+// Setting up Back buttons
+new Jui('#settings-back-button')
 .addEventListener('click', backEvent => {
-	closeMessagePanel();
+	closePanel('settings');
+});
+new Jui('#message-back-button')
+.addEventListener('click', backEvent => {
+	closePanel('message');
+});
+new Jui('#details-back-button')
+.addEventListener('click', backEvent => {
+	closePanel('details');
 });
 
 
 // Setting up Profile button
-const contactProfileButton = new Jui('#contact-profile-button')
+const detailsButton = new Jui('#details-button')
 .addEventListener('click', buttonEvent => {
-	alert('Profile');
+	openPanel('details');
 });
 
 
