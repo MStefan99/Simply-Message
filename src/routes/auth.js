@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const sign = require('../lib/sign');
 const openDB = require('../lib/db');
 const {sessionCookie} = require('../lib/cookie');
-const flash = require('flash-http');
+const flash = require('express-flash');
 const libUser = require('../lib/user');
 
 

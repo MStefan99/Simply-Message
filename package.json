@@ -10,7 +10,7 @@
 		"body-parser": "^1.19.0",
 		"cookie-parser": "^1.4.4",
 		"express": "^4.17.1",
-		"flash-http": "^1.0.0",
+		"express-flash": "^1.0.0",
 		"mongodb": "^3.6.0",
 		"pug": "^3.0.2",
 		"ws": "^7.3.1"
