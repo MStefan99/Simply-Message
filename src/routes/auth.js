@@ -1,11 +1,12 @@
 'use strict';
 
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const sign = require('../lib/sign');
 const openDB = require('../lib/db');
 const {sessionCookie} = require('../lib/cookie');
-const flash = require('../lib/flash');
+const flash = require('flash-http');
 const libUser = require('../lib/user');
 
 
@@ -22,6 +23,7 @@ const libUser = require('../lib/user');
 
 
 const router = express.Router();
+router.use(bodyParser.urlencoded({extended: true}));
 router.use(flash());
 
 

@@ -1,3 +1,5 @@
+// Shared library by MStefan99
+
 'use strict';
 
 
@@ -19,16 +21,30 @@ export default class Jui {
 		} else if (query instanceof NodeList) {  // If query is a node list
 			this.nodes = Array.from(query);
 		} else if (query.match(/^\s*<.*>\s*$/s)) {  // If query is an HTML string
-			this.nodes = Array.from(new DOMParser()
-				.parseFromString(query
-					.replace(/^\s*|\s*$|(>)\s*|\s*(<)/g, '$1$2')  // Removing whitespaces
-					.replace(/[\t\n\r]+/g, ' '),
-					'text/html')
-				.body
-				.childNodes);
+			query = query  // Removing whitespaces
+			.replace(/^\s*|\s*$/g, '')
+			.replace(/>\s*</g, '><')
+			.replace(/[\t\n]+|\\ /g, ' ');
+
+			if (query.match(/<tr|<td/)) {
+				const table = document.createElement('table');
+				table.innerHTML = query;
+
+				if (query.match(/<tbody/)) {  // If query includes an html table
+					this.nodes = Array.from(table.childNodes);  // Get table elements
+				} else if (query.match(/<tr/)) {
+					this.nodes = Array.from(table.childNodes[0].childNodes);  // Get tbody elements
+				} else {
+					this.nodes = Array.from(table.childNodes[0].childNodes[0].childNodes);  // Get first tr elements
+				}
+			} else {
+				const div = document.createElement('div');
+				div.innerHTML = query;
+
+				this.nodes = Array.from(div.childNodes);
+			}
 		} else {  // If query is a selector
-			this.nodes = Array.from(document
-				.querySelectorAll(query));
+			this.nodes = Array.from(document.querySelectorAll(query));
 		}
 	}
 
@@ -40,8 +56,8 @@ export default class Jui {
 		if (!this.nodes.length) {
 			throw new Error('Trying to append to an empty object')
 		}
-		element.nodes.forEach((node) => {
-			this.nodes[this.nodes.length - 1].appendChild(node);
+		element.nodes.forEach(node => {
+			this.nodes[0].appendChild(node);
 		});
 		return this;
 	}
@@ -54,9 +70,24 @@ export default class Jui {
 		if (!target.nodes.length) {
 			throw new Error('Trying to append to an empty object')
 		}
-		this.nodes.forEach((node) => {
-			target.nodes[target.nodes.length - 1].appendChild(node);
+		this.nodes.forEach(node => {
+			target.nodes[0].appendChild(node);
 		});
+		return this;
+	}
+
+
+	replaceWith(newContent) {
+		if (!(newContent instanceof Jui)) {
+			newContent = new Jui(newContent);
+		}
+		if (!this.nodes.length) {
+			throw new Error('Trying to append to an empty object')
+		}
+		this.nodes[0].replaceWith(newContent.nodes[0]);
+		for (let i = 1; i < newContent.nodes.length; ++i) {
+			this.nodes[0].parentNode.appendChild(newContent.nodes[i]);
+		}
 		return this;
 	}
 
@@ -65,7 +96,7 @@ export default class Jui {
 		if (html === undefined) {  // Get html
 			let html = '';
 
-			this.nodes.forEach((node) => {
+			this.nodes.forEach(node => {
 				html += node.innerHTML;
 			});
 			return html;
@@ -82,7 +113,7 @@ export default class Jui {
 		if (text === undefined) {  // Get text
 			let text = '';
 
-			this.nodes.forEach((node) => {
+			this.nodes.forEach(node => {
 				text += node.innerText;
 			});
 			return text;
@@ -96,9 +127,9 @@ export default class Jui {
 
 
 	css(property, value) {
-		if (value === undefined) {  // Get css
+		if (value === undefined) {  // Get style
 			return this.nodes[0].style[property];
-		} else {  // Set css
+		} else {  // Set style
 			this.nodes.forEach(node => {
 				node.style[property] = value;
 			});
@@ -107,15 +138,43 @@ export default class Jui {
 	}
 
 
-	prop(propertyName, value) {
-		if (value === undefined) {  // Get property
-			return this.nodes[0].getAttribute(propertyName);
-		} else {  // Set property
+	attr(attributeName, value) {
+		if (value === undefined) {  // Get attribute
+			return this.nodes[0].getAttribute(attributeName);
+		} else {  // Set attribute
 			this.nodes.forEach(node => {
-				node.setAttribute(propertyName, value);
+				node.setAttribute(attributeName, value);
 			});
 			return this;
 		}
+	}
+
+
+	removeAttr(attributeName) {
+		this.nodes.forEach(node => {
+			node.removeAttribute(attributeName);
+		});
+		return this;
+	}
+
+
+	prop(propertyName, value) {
+		if (value === undefined) {  // Get property
+			return this.nodes[0][propertyName];
+		} else {  // Set property
+			this.nodes.forEach(node => {
+				node[propertyName] = value;
+			});
+			return this;
+		}
+	}
+
+
+	removeProp(propertyName) {
+		this.nodes.forEach(node => {
+			node[propertyName] = undefined;
+		});
+		return this;
 	}
 
 
@@ -184,7 +243,24 @@ export default class Jui {
 	}
 
 
-	addEventListener(events, handler) {
+	if(condition, ifTrue, ifFalse) {
+		if (condition) {
+			if (ifTrue) {
+				return ifTrue(this);
+			} else {
+				return this;
+			}
+		} else {
+			if (ifFalse) {
+				return ifFalse(this);
+			} else {
+				return this;
+			}
+		}
+	}
+
+
+	on(events, handler) {
 		this.nodes.forEach(node => {
 			events.split(' ').forEach(event => {
 				node.addEventListener(event, handler);
@@ -194,7 +270,7 @@ export default class Jui {
 	}
 
 
-	removeEventListener(events, handler) {
+	off(events, handler) {
 		this.nodes.forEach(node => {
 			events.split(' ').forEach(event => {
 				node.removeEventListener(event, handler);
@@ -204,8 +280,15 @@ export default class Jui {
 	}
 
 
+	toString() {
+		let html = '';
+		this.nodes.forEach(node => html += node.innerHTML);
+		return html;
+	}
+
+
 	remove() {
-		this.nodes.forEach((node) => {
+		this.nodes.forEach(node => {
 			remove(node);
 		});
 	}

@@ -114,6 +114,3 @@ node_modules/
 
 # Compiled css
 public/style/**/*.css
-
-# Package-lock
-package-lock.json

@@ -9,7 +9,7 @@ let currentChat;
 const header = new Jui('header').remove();
 const footer = new Jui('footer').remove();
 const main = new Jui('main')
-.addEventListener('click contextmenu', mainEvent => {
+.on('click contextmenu', mainEvent => {
 	if (!mainEvent.handled) {  // Close context menus if needed
 		new Jui('.menu').remove();
 	}
@@ -170,23 +170,23 @@ function addChat(chat) {
 			</div>
 		</div>
 		`)
-	.prop('data-id', chat._id)
+	.attr('data-id', chat._id)
 	.appendTo(chatContainer)
-	.addEventListener('click', () => openPanel('message'))
-	.addEventListener('click', e => {
+	.on('click', () => openPanel('message'))
+	.on('click', e => {
 		if (!currentChat || currentChat._id !== chat._id) {
 			openChat(chat)
 		}
 	})
-	.addEventListener('click', chatEvent => currentChat = chat)
-	chatElement.addEventListener('contextmenu', chatEvent => {
+	.on('click', chatEvent => currentChat = chat)
+	chatElement.on('contextmenu', chatEvent => {
 		chatEvent.preventDefault();
 		chatEvent.handled = true;
 		const menu = createMenu(chatEvent)
 		if (chat.creator === getSession().userID) {
 			if (chat.type !== 'chat') {
 				menu.append(new Jui('<div class="menu-element">Rename chat</div>')
-					.addEventListener('click', menuEvent => {
+					.on('click', menuEvent => {
 						createPopup()
 						.append(new Jui(`
 						<form>
@@ -197,7 +197,7 @@ function addChat(chat) {
 							<input type="submit" class="btn btn-success" value="Rename">
 						</form>
 					`)
-						.addEventListener('submit', async formEvent => {
+						.on('submit', async formEvent => {
 							formEvent.preventDefault();
 
 							const name = new Jui('#rename-chat-name').val();
@@ -221,7 +221,7 @@ function addChat(chat) {
 				)
 			}
 			menu.append(new Jui('<div class="menu-element">Delete chat</div>')
-				.addEventListener('click', async menuEvent => {
+				.on('click', async menuEvent => {
 					const res = await fetch('/api/v0.1/chats/' + chat._id + '/', {
 						method: 'delete'
 					});
@@ -249,16 +249,16 @@ function addMessage(message) {
 		<span class="message-edited text-muted">${message.edited ? ', edited' : ''}</span>
 		</div>
 	`)
-	.prop('data-id', message._id)
+	.attr('data-id', message._id)
 	.appendTo(messageContainer)
-	.addEventListener('click contextmenu', messageEvent => {
+	.on('click contextmenu', messageEvent => {
 			messageEvent.handled = true;
 			messageEvent.preventDefault();
 			const menu = createMenu(messageEvent)
 
 			if (message.author === getSession().userID) {
 				menu.append(new Jui(`<div class="menu-element">Edit message</div>`)
-					.addEventListener('click', async menuEvent => {
+					.on('click', async menuEvent => {
 						createPopup()
 						.append(new Jui(`
 					<form>
@@ -269,7 +269,7 @@ function addMessage(message) {
 						<input type="submit" class="btn btn-success" value="Update">
 					</form>
 					`)
-						.addEventListener('submit', async formEvent => {
+						.on('submit', async formEvent => {
 							formEvent.preventDefault();
 							const text = new Jui('#edit-message-text').val();
 
@@ -295,7 +295,7 @@ function addMessage(message) {
 					})
 				)
 				menu.append(new Jui(`<div class="menu-element">Delete message</div>`)
-					.addEventListener('click', async menuEvent => {
+					.on('click', async menuEvent => {
 						const res = await fetch('/api/v0.1/chats/' + currentChat._id
 							+ '/messages/' + message._id + '/', {
 							method: 'delete'
@@ -314,7 +314,7 @@ function addMessage(message) {
 
 // Setting up page blocker
 const pageBlocker = new Jui('#page-blocker')
-.addEventListener('click', blockerEvent => {
+.on('click', blockerEvent => {
 	blockerEvent.currentTarget.classList.add('d-none');
 	new Jui('.popup').remove();
 });
@@ -322,25 +322,25 @@ const pageBlocker = new Jui('#page-blocker')
 
 // Setting up Settings button
 const settingsButton = new Jui('#settings-button')
-.addEventListener('click', buttonEvent => {
+.on('click', buttonEvent => {
 	openPanel('settings');
 });
 
 
 // Setting up My Profile button
 const myProfileButton = new Jui('#my-profile-button')
-.addEventListener('click', buttonEvent => {
+.on('click', buttonEvent => {
 	alert('My Profile');
 });
 
 
 // Setting up New Chat button
 const newButton = new Jui('#new-button')
-.addEventListener('click', newButtonEvent => {
+.on('click', newButtonEvent => {
 	newButtonEvent.handled = true;
 	createMenu(newButtonEvent)
 	.append(new Jui('<div class="menu-element">New chat</div>')
-	.addEventListener('click', async menuEvent => {
+	.on('click', async menuEvent => {
 		createPopup()
 		.append(new Jui(`
 			<form>
@@ -349,7 +349,7 @@ const newButton = new Jui('#new-button')
 				<select id="new-chat-contact"></select>
 				<input type="submit" class="btn btn-success" value="Create">
 			</form>
-		`).addEventListener('submit', async formEvent => {
+		`).on('submit', async formEvent => {
 			formEvent.preventDefault();
 			const contactID = document.querySelector('#new-chat-contact')
 				.selectedOptions[0].value
@@ -377,7 +377,7 @@ const newButton = new Jui('#new-button')
 		}
 	}))
 	.append(new Jui('<div class="menu-element">New group</div>')
-		.addEventListener('click', menuEvent => {
+		.on('click', menuEvent => {
 			const popup = createPopup()
 			.append(new Jui(`
 				<form id="new-chat-form">
@@ -390,7 +390,7 @@ const newButton = new Jui('#new-button')
 				</form>
 			`))
 
-			.addEventListener('submit', async (event) => {
+			.on('submit', async (event) => {
 				event.preventDefault();
 				const name = new Jui('#new-group-name').val();
 				const contacts = [];
@@ -430,29 +430,29 @@ const newButton = new Jui('#new-button')
 
 // Setting up Back buttons
 new Jui('#settings-back-button')
-.addEventListener('click', backEvent => {
+.on('click', backEvent => {
 	closePanel('settings');
 });
 new Jui('#message-back-button')
-.addEventListener('click', backEvent => {
+.on('click', backEvent => {
 	closePanel('message');
 });
 new Jui('#details-back-button')
-.addEventListener('click', backEvent => {
+.on('click', backEvent => {
 	closePanel('details');
 });
 
 
 // Setting up Profile button
 const detailsButton = new Jui('#details-button')
-.addEventListener('click', buttonEvent => {
+.on('click', buttonEvent => {
 	openPanel('details');
 });
 
 
 // Setting up Send form
 const newMessageForm = new Jui('#new-message-form')
-.addEventListener('submit', async formEvent => {
+.on('submit', async formEvent => {
 	formEvent.preventDefault();
 	const res = await fetch(`/api/v0.1/chats/${currentChat._id}/messages/`, {
 		method: 'post',

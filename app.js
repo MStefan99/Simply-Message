@@ -3,6 +3,7 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const http = require('http');
 
 const middleware = require('./src/lib/middleware');
 const indexRouter = require('./src/routes/index');
@@ -12,12 +13,17 @@ const apiRouter = require('./src/api/router');
 
 const app = express();
 
+const server = http
+	.createServer(app)
+	.listen(process.env.PORT, err => {
+		console.log('Listening on HTTP, port ' + server.address().port);
+	});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.set('x-powered-by', false);
 
-app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -38,7 +44,3 @@ app.use((err, req, res, next) => {
 	res.render('error');
 });
 
-
-app.listen(3000, () => {
-	console.log('Listening on port 3000');
-});
