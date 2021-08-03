@@ -186,6 +186,10 @@ async function openChat(chat) {
 
 async function addChat(chat) {
 	const lastMessage = chat.messages[0];
+	if (chat.secure && !localStorage.getItem(chat._id + '_secret')) {
+		console.warn('Encryption key for chat', chat._id, 'lost!');
+		return;
+	}
 
 	if (chat.type === 'chat') {
 		const userID = chat.invitees[0] === getSession().userID?
@@ -221,7 +225,7 @@ async function addChat(chat) {
 					${chat.name}
 				</h4>
 				<span class="chat-type text-muted">
-					${chat.type}
+					${chat.secure? 'secure' : ''} ${chat.type}
 				</span>
 			</div>
 			<div class="chat-line chat-line-2">
