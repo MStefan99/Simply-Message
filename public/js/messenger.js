@@ -300,8 +300,8 @@ async function addChat(chat) {
 }
 
 
-async function addMessage(message, options) {
-	if (options.secure) {
+async function addMessage(message, chat) {
+	if (chat.secure) {
 		const key =
 			await crypto.subtle.importKey('jwk',
 				JSON.parse(localStorage.getItem(currentChat._id + '_secret')),
@@ -359,6 +359,29 @@ async function addMessage(message, options) {
 									.on('submit', async formEvent => {
 										formEvent.preventDefault();
 										const text = new Jui('#edit-message-text').val();
+										let content = text;
+
+										if (chat.secure) {
+											const key = await crypto.subtle.importKey('jwk',
+												JSON.parse(localStorage.getItem(currentChat._id + '_secret')),
+												{
+													name: 'AES-GCM',
+													length: 256
+												},
+												true,
+												['encrypt', 'decrypt']
+											);
+
+											content = arrayBufferToBase64(
+												await crypto.subtle.encrypt(
+													{
+														name: 'AES-GCM',
+														iv: base64ToArrayBuffer(message.iv)
+													},
+													key,
+													new TextEncoder().encode(text)
+												));
+										}
 
 										const res = await fetch('/api/v0.1/chats/' + currentChat._id
 											+ '/messages/' + message._id + '/', {
@@ -367,7 +390,7 @@ async function addMessage(message, options) {
 												'Content-Type': 'application/json'
 											},
 											body: JSON.stringify({
-												text: text
+												text: content
 											})
 										});
 
@@ -591,7 +614,6 @@ const newMessageForm = new Jui('#new-message-form')
 					new TextEncoder().encode(messageInput.val())
 				));
 		}
-		console.log(text);
 		const res = await fetch(`/api/v0.1/chats/${currentChat._id}/messages/`, {
 			method: 'post',
 			headers: {
