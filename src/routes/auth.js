@@ -19,7 +19,7 @@ const libUser = require('../lib/user');
 		users.createIndex('username');
 		users.createIndex('email');
 	}
-})()
+})();
 
 
 const router = express.Router();
@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
 	});
 
 	res.flash({title: 'Registration successful!'})
-	.redirect(303,'/');
+		.redirect(303, '/');
 });
 
 
@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
 			userID: user._id,
 			time: Date.now(),
 			ip: req.ip,
-			ua: req.get('User-Agent'),
+			ua: req.get('User-Agent')
 		};
 
 		res.cookie(sessionCookie.cookieName, sign.sign(session),
@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/logout', (req, res) => {
 	res.clearCookie(sessionCookie.cookieName,
-		sessionCookie.options)
+		sessionCookie.options);
 	res.redirect(303, '/');
 });
 

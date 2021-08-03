@@ -16,11 +16,11 @@ function sign(data) {
 		.update(stringData)
 		.digest('hex');
 
-	return `${encodedData}.${signature}`
+	return `${encodedData}.${signature}`;
 }
 
 
-function verify(signedData){
+function verify(signedData) {
 	const [encodedData, receivedSignature] = signedData.split('.');
 
 	const data = Buffer
@@ -35,11 +35,11 @@ function verify(signedData){
 	return {
 		data: JSON.parse(data),
 		valid: receivedSignature === signature
-	}
+	};
 }
 
 
 module.exports = {
 	sign: sign,
 	verify: verify
-}
+};

@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {  // Create message
 	try {
 		const chat = await libChat.getChatByID(req.params.chatID);
 		const message = await libMessage
-		.createMessage(chat, req.body, req.user);
+			.createMessage(chat, req.body, req.user);
 
 		res.json(message);
 	} catch (e) {
@@ -42,7 +42,7 @@ router.put('/:messageID', async (req, res) => {  // Update message
 	try {
 		const chat = await libChat.getChatByID(req.params.chatID);
 		const message = await libMessage
-		.getMessageByID(chat, req.params.messageID);
+			.getMessageByID(chat, req.params.messageID);
 
 		if (!message.author.equals(req.user._id)) {
 			res.status(403).send('NOT_ALLOWED');
@@ -61,7 +61,7 @@ router.delete('/:messageID', async (req, res) => {  // Delete message
 	try {
 		const chat = await libChat.getChatByID(req.params.chatID);
 		const message = await libMessage
-		.getMessageByID(chat, req.params.messageID);
+			.getMessageByID(chat, req.params.messageID);
 
 		if (!message.author.equals(req.user._id)) {
 			res.status(403).send('NOT_ALLOWED');

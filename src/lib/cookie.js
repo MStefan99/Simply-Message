@@ -8,4 +8,4 @@ module.exports = {
 			secure: !process.env.NO_HTTPS
 		}
 	}
-}
+};

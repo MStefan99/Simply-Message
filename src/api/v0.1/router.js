@@ -1,6 +1,6 @@
 'use strict';
 
-const express = require('express')
+const express = require('express');
 
 const chatRouter = require('./chats');
 const messageRouter = require('./messages');

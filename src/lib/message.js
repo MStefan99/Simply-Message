@@ -79,7 +79,7 @@ class Message {
 	async setText(newText) {
 		const db = await openDB('simply_message');
 
-		const chats = db.collection('chats')
+		const chats = db.collection('chats');
 		await chats.findOneAndUpdate({  // TODO: filter by chat
 				'messages._id': this._id
 			},
@@ -96,7 +96,7 @@ class Message {
 
 
 	async remove() {
-		const db = await openDB('simply_message')
+		const db = await openDB('simply_message');
 
 		const chats = db.collection('chats');
 		await chats.updateMany({}, {  // TODO: filter by chat
