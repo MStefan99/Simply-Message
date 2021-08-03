@@ -23,6 +23,28 @@ const messageContainer = new Jui('#message-container');
 const messageInput = new Jui('#message-input');
 
 
+function arrayBufferToBase64( buffer ) {
+	let binary = '';
+	let bytes = new Uint8Array(buffer);
+	let len = bytes.byteLength;
+	for (let i = 0; i < len; ++i) {
+		binary += String.fromCharCode(bytes[i]);
+	}
+	return btoa( binary );
+}
+
+
+function base64ToArrayBuffer(base64) {
+	let binary_string = window.atob(base64);
+	let len = binary_string.length;
+	let bytes = new Uint8Array(len);
+	for (let i = 0; i < len; ++i) {
+		bytes[i] = binary_string.charCodeAt(i);
+	}
+	return bytes.buffer;
+}
+
+
 function getCookie(name) {
 	const cookies = document.cookie.split('; ');
 
@@ -123,14 +145,32 @@ function closePanel(panel) {
 async function openChat(chat) {
 	new Jui('.message').remove();
 	new Jui('#contact-info h4').text('Loading chat...');
+	const messageInput = new Jui('#message-input');
+	const sendButton = new Jui('#send-button');
 
 	const res = await fetch(`/api/v0.1/chats/${chat._id}/messages/`);
 
 	if (!res.ok) {
 		alert('Could not download messages');
 	} else {
+		if (currentChat.secure) {
+			if (!localStorage.getItem(currentChat._id + '_secret')) {
+				messageInput
+					.attr('disabled', true)
+					.val('Waiting for another user to accept...');
+				sendButton
+					.attr('disabled', true);
+			}
+		} else {
+			messageInput
+				.removeAttr('disabled', false)
+				.val(null);
+			sendButton
+				.removeAttr('disabled');
+		}
+
 		for (const message of await res.json()) {
-			addMessage(message);
+			addMessage(message, currentChat);
 		}
 
 		new Jui('#chat-name').text(chat.name);
@@ -144,11 +184,35 @@ async function openChat(chat) {
 }
 
 
-function addChat(chat) {
+async function addChat(chat) {
+	const lastMessage = chat.messages[0];
+
 	if (chat.type === 'chat') {
 		const userID = chat.invitees[0] === getSession().userID ?
 			chat.invitees[1] : chat.invitees[0];
 		chat.name = getContacts().find(contact => contact._id === userID).name;
+	}
+	if (lastMessage && chat.secure) {
+		const key =
+			await crypto.subtle.importKey('jwk',
+				JSON.parse(localStorage.getItem(chat._id + '_secret')),
+				{
+					name: "AES-GCM",
+					length: 256
+				},
+				true,
+				['decrypt']
+			);
+
+		lastMessage.text = new TextDecoder().decode(
+			await crypto.subtle.decrypt(
+				{
+					name: "AES-GCM",
+					iv: base64ToArrayBuffer(lastMessage.iv)
+				},
+				key,
+				base64ToArrayBuffer(lastMessage.text)
+			));
 	}
 	const chatElement = new Jui(`
 		<div class="chat clickable border-bottom user-select-none p-3">
@@ -236,7 +300,30 @@ function addChat(chat) {
 }
 
 
-function addMessage(message) {
+async function addMessage(message, options) {
+	if (options.secure) {
+		const key =
+			await crypto.subtle.importKey('jwk',
+				JSON.parse(localStorage.getItem(currentChat._id + '_secret')),
+				{
+					name: "AES-GCM",
+					length: 256
+				},
+				true,
+				['decrypt']
+			);
+
+		message.text = new TextDecoder().decode(
+			await crypto.subtle.decrypt(
+				{
+					name: "AES-GCM",
+					iv: base64ToArrayBuffer(message.iv)
+				},
+				key,
+				base64ToArrayBuffer(message.text)
+			));
+	}
+
 	new Jui(`
 		<div class="message m-3 p-2 user-select-none
 			${message.author === getSession().userID ? 'align-self-end' : ''}">
@@ -480,13 +567,39 @@ const detailsButton = new Jui('#details-button')
 const newMessageForm = new Jui('#new-message-form')
 .on('submit', async formEvent => {
 	formEvent.preventDefault();
+	let text = messageInput.val();
+	const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+	if (currentChat.secure && localStorage.getItem(currentChat._id + '_secret')) {
+		const key = await crypto.subtle.importKey('jwk',
+			JSON.parse(localStorage.getItem(currentChat._id + '_secret')),
+			{
+				name: "AES-GCM",
+				length: 256
+			},
+			true,
+			['encrypt', 'decrypt']
+		);
+
+		text = arrayBufferToBase64(
+		await crypto.subtle.encrypt(
+			{
+				name: "AES-GCM",
+				iv: iv
+			},
+			key,
+			new TextEncoder().encode(messageInput.val())
+		));
+	}
+	console.log(text);
 	const res = await fetch(`/api/v0.1/chats/${currentChat._id}/messages/`, {
 		method: 'post',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			text: messageInput.val()
+			text: text,
+			iv: currentChat.secure? arrayBufferToBase64(iv) : undefined
 		})
 	});
 
@@ -495,7 +608,7 @@ const newMessageForm = new Jui('#new-message-form')
 	new Jui(`.chat[data-id='${currentChat._id}'] span.chat-time`)
 	.text(new Date().toLocaleString())
 	messageInput.val('');
-	addMessage(await res.json());
+	addMessage(await res.json(), currentChat);
 });
 
 

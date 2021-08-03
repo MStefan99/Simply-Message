@@ -8,6 +8,7 @@ class Message {
 	_id = ObjectID();
 	author;
 	text;
+	iv;
 	time = Date.now();
 	edited = false;
 
@@ -18,8 +19,9 @@ class Message {
 
 		messageObject.author = user._id;
 		messageObject.text = options.text;
+		messageObject.iv = options.iv ?? undefined;
 
-		const chats = db.collection('chats')
+		const chats = db.collection('chats');
 		await chats.updateOne({_id: chat._id}, {
 			$push: {messages: messageObject}
 		});
