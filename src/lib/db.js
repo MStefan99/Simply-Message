@@ -7,7 +7,7 @@ const client = new MongoClient(url, {useUnifiedTopology: true});
 const conn = client.connect();
 
 
-async function openDB(name) {
+async function openDB(name = 'simply_message') {
 	return conn.then(conn => conn.db(name));
 }
 

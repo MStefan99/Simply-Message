@@ -5,8 +5,6 @@ const crypto = require('crypto');
 
 const openDB = require('./db');
 
-const secret = 'Simply Message very secret key!';
-
 
 class User {
 	_id = ObjectID();
@@ -22,14 +20,14 @@ class User {
 
 		const db = await openDB('simply_message');
 		const users = db.collection('users');
-		const hmac = crypto.createHmac('sha256', secret);
 
 		userObject.username = options.username;
 		userObject.email = options.email;
 		userObject.name = options.name;
-		userObject.passwordHash = hmac
-		.update(options.password)
-		.digest('hex')
+		userObject.passwordHash = crypto
+			.createHmac('sha256', options.username)
+			.update(options.password)
+			.digest('hex');
 
 		await users.insertOne(userObject);
 		return userObject;
@@ -71,11 +69,10 @@ class User {
 
 
 	verifyPassword(password) {
-		const hmac = crypto.createHmac('sha256', secret);
-
-		return this.passwordHash === hmac
-		.update(password)
-		.digest('hex');
+		return this.passwordHash === crypto
+			.createHmac('sha256', this.username)
+			.update(password)
+			.digest('hex');
 	}
 
 
@@ -98,13 +95,15 @@ class User {
 					as: 'contacts'
 				}
 			},
-			{$project: {
+			{
+				$project: {
 					'contacts.passwordHash': 0,
-					'contacts.contacts': 0,
-				}},
+					'contacts.contacts': 0
+				}
+			},
 			{$unwind: '$contacts'},
-			{$replaceRoot: {newRoot: '$contacts'}},
-		]).toArray()
+			{$replaceRoot: {newRoot: '$contacts'}}
+		]).toArray();
 	}
 
 

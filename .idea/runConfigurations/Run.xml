@@ -2,7 +2,7 @@
   <configuration default="false" name="Run" type="NodeJSConfigurationType" path-to-js-file="app.js" working-dir="$PROJECT_DIR$">
     <envs>
       <env name="NO_HTTPS" value="true" />
-      <env name="PORT" value="3000" />
+      <env name="PORT" value="3002" />
     </envs>
     <EXTENSION ID="com.jetbrains.nodejs.run.NodeJSStartBrowserRunConfigurationExtension">
       <browser url="http://localhost:3000/" />

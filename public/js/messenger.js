@@ -345,14 +345,33 @@ const newButton = new Jui('#new-button')
 		.append(new Jui(`
 			<form>
 				<h2>New chat</h2>
-				<label for="new-chat-contact">Select contact</label>
-				<select id="new-chat-contact"></select>
+				<div class="form-group">
+					<label for="new-chat-contact">Select contact</label>
+					<select id="new-chat-contact"></select>
+				</div>
+				<div class="form-check">
+					<input id="new-chat-secure" type="checkbox"></input>
+					<label for="new-chat-secure">Secure</label>
+				</div>
 				<input type="submit" class="btn btn-success" value="Create">
 			</form>
 		`).on('submit', async formEvent => {
 			formEvent.preventDefault();
 			const contactID = document.querySelector('#new-chat-contact')
-				.selectedOptions[0].value
+				.selectedOptions[0].value;
+			const secure = document.getElementById('new-chat-secure').checked;
+
+			let keys;
+			if (secure) {
+				keys = await window.crypto.subtle.generateKey(
+					{
+						name: "ECDH",
+						namedCurve: "P-384"
+					},
+					true,
+					["deriveKey"]
+				);
+			}
 
 			const res = await fetch('/api/v0.1/chats/', {
 				method: 'POST',
@@ -361,10 +380,17 @@ const newButton = new Jui('#new-button')
 				},
 				body: JSON.stringify({
 					type: 'chat',
-					contact: contactID
+					contact: contactID,
+					secure,
+					pubKey: secure? await crypto.subtle.exportKey('jwk', keys.publicKey) : undefined
 				})
 			})
-			addChat(await res.json());
+			const chat = await res.json();
+			addChat(chat);
+			if (secure) {
+				localStorage.setItem(chat._id + '_privKey',
+					JSON.stringify(await crypto.subtle.exportKey('jwk', keys.privateKey)));
+			}
 
 			closePopup();
 		}))
@@ -488,6 +514,94 @@ addEventListener('load', async e => {
 		} else {
 			for (const chat of await res.json()) {
 				addChat(chat);
+
+				if (chat.aPubKey && chat.creator !== getSession().userID) {
+					const keys = await window.crypto.subtle.generateKey(
+						{
+							name: "ECDH",
+							namedCurve: "P-384"
+						},
+						true,
+						["deriveKey"]
+					);
+
+					const secret = await crypto.subtle.deriveKey(
+						{
+							name: "ECDH",
+							public: await crypto.subtle.importKey('jwk',
+								chat.aPubKey,
+								{
+									name: "ECDH",
+									namedCurve: "P-384"
+								},
+								false,
+								[]
+							),
+						},
+						keys.privateKey,
+						{
+							name: "AES-GCM",
+							length: 256
+						},
+						true,
+						['encrypt', 'decrypt']
+					)
+					localStorage.setItem(chat._id + '_secret', JSON.stringify(await crypto.subtle
+						.exportKey('jwk', secret)));
+
+					fetch(`/api/v0.1/chats/${chat._id}`, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							bPubKey: await crypto.subtle.exportKey('jwk', keys.publicKey)
+						})
+					});
+				} else if (chat.bPubKey && chat.creator === getSession().userID) {
+					const secret = await crypto.subtle.deriveKey(
+					{
+						name: "ECDH",
+						public: await crypto.subtle.importKey('jwk',
+							chat.bPubKey,
+							{
+								name: "ECDH",
+								namedCurve: "P-384"
+							},
+							false,
+							[]
+						),
+					},
+					await crypto.subtle.importKey('jwk',
+						JSON.parse(localStorage.getItem(chat._id + '_privKey')),
+						{
+							name: "ECDH",
+							namedCurve: "P-384"
+						},
+						false,
+						['deriveKey']
+					),
+					{
+						name: "AES-GCM",
+						length: 256
+					},
+					true,
+					['encrypt', 'decrypt']
+				)
+					localStorage.removeItem(chat._id + '_privKey');
+					localStorage.setItem(chat._id + '_secret', JSON.stringify(await crypto.subtle
+						.exportKey('jwk', secret)));
+
+					fetch(`/api/v0.1/chats/${chat._id}`, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							noPubKey: true
+						})
+					});
+				}
 			}
 		}
 	}

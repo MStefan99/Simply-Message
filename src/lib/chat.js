@@ -26,7 +26,9 @@ class Chat {
 				}
 				chatObject.name = null;
 				chatObject.desc = null;
-				chatObject.invitees = [user._id, ObjectID(options.contact)]
+				chatObject.invitees = [user._id, ObjectID(options.contact)];
+				chatObject.secure = options.secure;
+				chatObject.aPubKey = options.secure? options.pubKey : undefined;
 				break;
 			case 'group':
 				if (!options.contacts) {
@@ -68,7 +70,10 @@ class Chat {
 				invitees: {$slice: -2},
 				name: 1,
 				type: 1,
-				creator: 1
+				creator: 1,
+				secure: 1,
+				aPubKey: 1,
+				bPubKey: 1
 			}
 		}).toArray();
 
@@ -116,6 +121,22 @@ class Chat {
 		});
 
 		this.name = newName;
+	}
+
+
+	async setKeys(aPubKey, bPubKey) {
+		const db = await openDB('simply_message');
+		const chats = db.collection('chats');
+
+		await chats.updateOne({_id: this._id}, {
+			$set: {
+				aPubKey: aPubKey,
+				bPubKey: bPubKey
+			}
+		});
+
+		this.aPubKey = aPubKey;
+		this.bPubKey = bPubKey;
 	}
 
 

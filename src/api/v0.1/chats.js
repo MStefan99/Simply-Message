@@ -37,11 +37,16 @@ router.patch('/:chatID', async (req, res) => {  // Rename chat
 	try {
 		const chat = await libChat.getChatByID(req.params.chatID);
 
-		if (!chat.creator.equals(req.user._id)) {
+		if (req.body.noPubKey === true) {
+			await chat.setKeys(undefined, undefined);
+			res.status(200).json(chat);
+		} else if (req.body.bPubKey) {
+			await chat.setKeys(undefined, req.body.bPubKey);
+			res.status(200).json(chat);
+		} else if (!chat.creator.equals(req.user._id)) {
 			res.status(403).send('NOT_ALLOWED');
-		} else {
+		} else if (req.body.name) {
 			await chat.rename(req.body.name);
-
 			res.status(200).json(chat);
 		}
 	} catch (e) {

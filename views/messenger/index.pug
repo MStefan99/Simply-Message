@@ -31,10 +31,11 @@ block content
 					button#details-button.btn-outline-secondary.right Details
 			div#message-container
 			div.dock.py-2
-				form#new-message-form.form-row.border-top.mx-3
-					input#message-input.mr-3(placeholder='Write a message...'
-						autocomplete='off')
-					input#send-button.btn.btn-primary(type='submit' value='Send')
+				form#new-message-form
+					div.form-row.border-top.mx-3
+						input#message-input.mr-3(placeholder='Write a message...'
+							autocomplete='off' type='text')
+						input#send-button.btn.btn-primary(type='submit' value='Send')
 		div#details-panel.d-none.border-left.border-right
 			div.header.bg-light.p-2.border-bottom
 				h2 Details
