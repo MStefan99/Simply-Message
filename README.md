@@ -1,5 +1,13 @@
 # Simply-Message
 
-Simply Message is a secure and open-source messenger. Featuring everything a messenger needs to have, it's a perfect choice for you regardless of your needs!
-Simply Message features private and group chats as well as channels. With an optional end-to-end encryption and unlimited upload size it's a perfect choice for a messenger.
-Try it now!
+![Maintenance](https://img.shields.io/maintenance/no/2021?style=flat-square)
+
+This project was developed as a way for me to learn about and implement end-to-end encryption myself.
+Many planned features for this project aren't complete and likely will never be.
+
+### To run the project
+1. Install MongoDB
+2. Install the dependencies using `npm install`
+3. Register two accounts using the web interface
+4. Add the accounts' ObjectIDs to the other accounts' `contacts` field. If you skip this step the contacts list will be empty when creating new chats
+
